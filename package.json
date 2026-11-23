@@ -1,0 +1,9 @@
+{
+  "name": "yi-oracle-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "易经玄数大师 — 易经六十四卦 + 梅花易数 + 铁板神数",
+  "scripts": {
+    "build": "echo 'Static web assets ready in www/'"
+  }
+}

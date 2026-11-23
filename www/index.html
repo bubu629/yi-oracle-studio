@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>易经玄数大师 v1.0.0 — 易经·梅花·铁板神数</title>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #121926 0%, #1e3a5f 100%);
+      background-attachment: fixed;
+      color: #f8fafc;
+      margin: 0;
+      padding: 14px;
+      min-height: 100vh;
+    }
+    .container { max-width: 820px; margin: 0 auto; padding-bottom: 40px; }
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.35); padding-bottom: 12px; margin-bottom: 14px;
+    }
+    .brand { font-size: 18px; font-weight: 700; color: #f5d076; letter-spacing: 1px; }
+    .sub { font-size: 11.5px; color: #94a3b8; margin-top: 2px; }
+    .badge {
+      background: rgba(15, 23, 42, 0.9); border: 1px solid #d4af37; color: #f5d076;
+      padding: 5px 11px; border-radius: 999px; font-size: 11.5px; font-weight: 600;
+    }
+    .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+    .tab-btn {
+      flex: 1; padding: 10px 6px; border-radius: 10px; border: 1px solid #2a3f5f;
+      background: rgba(11, 18, 34, 0.85); color: #94a3b8; font-weight: 600; font-size: 13px; cursor: pointer;
+    }
+    .tab-btn.active {
+      border-color: #d4af37; color: #f5d076; background: rgba(30, 58, 95, 0.85);
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.18);
+    }
+    .card {
+      background: rgba(15, 23, 42, 0.92); border: 1px solid #2a3f5f;
+      border-radius: 12px; padding: 15px; margin-bottom: 14px;
+    }
+    .card h3 { margin: 0 0 10px 0; font-size: 15px; color: #f5d076; }
+    label { display: block; font-size: 12px; color: #94a3b8; margin-top: 10px; }
+    input, select, textarea {
+      width: 100%; background: #090f1d; border: 1px solid #334155; color: #fff;
+      padding: 10px; border-radius: 8px; margin-top: 4px; font-size: 13.5px;
+    }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .row > * { flex: 1; min-width: 120px; }
+    button {
+      background: #2563eb; color: #fff; border: none; padding: 11px 14px;
+      border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13.5px;
+    }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-gold { background: linear-gradient(135deg, #b8860b 0%, #d4af37 100%); color: #0f172a; }
+    .btn-green { background: #16a34a; }
+    .btn-slate { background: #334155; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Hexagram Visual */
+    .gua-grid { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 14px 0; }
+    .gua-box {
+      flex: 1; min-width: 140px; max-width: 240px; background: #090f1d;
+      border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 10px; padding: 12px; text-align: center;
+    }
+    .gua-title { font-size: 14px; font-weight: 700; color: #f5d076; margin-bottom: 8px; }
+    .gua-lines { display: flex; flex-direction: column; gap: 6px; align-items: center; margin: 8px 0; }
+    .yao-row { display: flex; align-items: center; gap: 6px; width: 116px; height: 11px; position: relative; }
+    .yao-yang { width: 100%; height: 10px; background: #e2b857; border-radius: 2px; }
+    .yao-yin { width: 100%; height: 10px; display: flex; justify-content: space-between; }
+    .yao-yin span { width: 43%; height: 10px; background: #94a3b8; border-radius: 2px; display: block; }
+    .yao-moving .yao-yang { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+    .yao-moving .yao-yin span { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+    .gua-meta { font-size: 12px; color: #cbd5e1; margin-top: 6px; line-height: 1.5; }
+    .tag {
+      display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700;
+      background: rgba(212, 175, 55, 0.16); color: #f5d076; border: 1px solid rgba(212, 175, 55, 0.4);
+    }
+    .ai-box {
+      background: #070c18; border: 1px solid #38bdf8; border-radius: 10px;
+      padding: 13px; margin-top: 12px; font-size: 13.5px; line-height: 1.7; white-space: pre-wrap; color: #e2e8f0;
+    }
+    .tieban-clause {
+      background: linear-gradient(90deg, rgba(184, 134, 11, 0.15), rgba(15, 23, 42, 0.9));
+      border-left: 3px solid #d4af37; padding: 10px 12px; border-radius: 6px; margin-top: 8px;
+    }
+    .lock-banner {
+      background: rgba(217, 119, 6, 0.15); border: 1px dashed #f59e0b; border-radius: 8px;
+      padding: 10px; font-size: 12.5px; color: #fcd34d; margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <div class="brand">☯️ 易经玄数大师 v1.0.0</div>
+        <div class="sub">易经六十四卦 · 梅花易数体用 · 铁板神数条文 · AI 深度精断</div>
+      </div>
+      <div id="licenseBadge" class="badge">基础免费版</div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('yijing', this)">🪙 易经起卦</button>
+      <button class="tab-btn" onclick="switchTab('meihua', this)">🌸 梅花易数</button>
+      <button class="tab-btn" onclick="switchTab('tieban', this)">📜 铁板神数</button>
+      <button class="tab-btn" onclick="switchTab('settings', this)">⚙️ 设置/激活</button>
+    </div>
+
+    <!-- PANEL 1: 易经金钱卦 -->
+    <div id="panel-yijing" class="panel active">
+      <div class="card">
+        <h3>🪙 易经 · 六爻金钱起卦</h3>
+        <label>心中默念所问之事（事业、财运、感情、抉择等）：</label>
+        <input type="text" id="yjQuestion" placeholder="例如：今年下半年换工作或创业是否顺利？" />
+        <div class="row" style="margin-top:12px;">
+          <button class="btn-gold" onclick="tossOneYao()">🎲 逐爻摇卦（当前第 <span id="tossCount">0</span>/6 爻）</button>
+          <button class="btn-green" onclick="castAllYijing()">⚡ 一键六爻成卦</button>
+          <button class="btn-slate" onclick="resetYijing()">↺ 重置</button>
+        </div>
+        <div id="yjResult" style="display:none; margin-top:14px;">
+          <div class="gua-grid" id="yjGuaGrid"></div>
+          <div id="yjClassicText" style="font-size:13px; color:#cbd5e1; line-height:1.6; background:#090f1d; padding:10px; border-radius:8px;"></div>
+          <button class="btn-gold" style="width:100%; margin-top:10px;" onclick="runAiInterpret('yijing')">🔮 AI 易学大师深度解卦</button>
+          <div id="yjAiOut" class="ai-box" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 2: 梅花易数 -->
+    <div id="panel-meihua" class="panel">
+      <div class="card">
+        <h3>🌸 梅花易数 · 本互变与体用生克</h3>
+        <div id="mhLock" class="lock-banner" style="display:none;">🔒 梅花易数全盘排卦为专业买断功能，可在「⚙️ 设置/激活」中输入 <b>YI1.xxx</b> 永久解锁（测试期点击下方按钮仍可免费预览排盘）。</div>
+        <label>所占何事：</label>
+        <input type="text" id="mhQuestion" placeholder="例如：这笔合作能否谈成？大概何时见结果？" />
+        <div class="row">
+          <div>
+            <label>起卦方式</label>
+            <select id="mhMode" onchange="toggleMhInputs()">
+              <option value="time">当前时间起卦（年月日时）</option>
+              <option value="num">报数起卦（输入两个正整数）</option>
+            </select>
+          </div>
+          <div id="mhNumBox1" style="display:none;">
+            <label>上卦数（如 1~999）</label>
+            <input type="number" id="mhNum1" value="38" min="1" />
+          </div>
+          <div id="mhNumBox2" style="display:none;">
+            <label>下卦数（如 1~999）</label>
+            <input type="number" id="mhNum2" value="66" min="1" />
+          </div>
+        </div>
+        <button class="btn-gold" style="width:100%; margin-top:12px;" onclick="castMeihua()">🌸 立即梅花排盘</button>
+
+        <div id="mhResult" style="display:none; margin-top:14px;">
+          <div class="gua-grid" id="mhGuaGrid"></div>
+          <div id="mhTiYong" style="font-size:13.5px; color:#e2e8f0; background:#090f1d; padding:12px; border-radius:8px; line-height:1.65;"></div>
+          <button class="btn-gold" style="width:100%; margin-top:10px;" onclick="runAiInterpret('meihua')">🔮 AI 梅花体用与应期精断</button>
+          <div id="mhAiOut" class="ai-box" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 3: 铁板神数 -->
+    <div id="panel-tieban" class="panel">
+      <div class="card">
+        <h3>📜 铁板神数 · 生辰起数与考刻条文</h3>
+        <div class="row">
+          <div>
+            <label>公历出生日期</label>
+            <input type="date" id="tbDate" value="1990-06-15" />
+          </div>
+          <div>
+            <label>出生时间（24小时制）</label>
+            <input type="time" id="tbTime" value="09:30" />
+          </div>
+          <div>
+            <label>性别</label>
+            <select id="tbGender">
+              <option value="乾造（男）">乾造（男）</option>
+              <option value="坤造（女）">坤造（女）</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>考刻校对 · 出生刻分（初刻至八刻）</label>
+            <select id="tbKe">
+              <option value="1">一刻（时辰前15分钟）</option>
+              <option value="2">二刻（15~30分钟）</option>
+              <option value="3" selected>三刻（30~45分钟）</option>
+              <option value="4">四刻（45~60分钟）</option>
+              <option value="5">五刻（60~75分钟）</option>
+              <option value="6">六刻（75~90分钟）</option>
+              <option value="7">七刻（90~105分钟）</option>
+              <option value="8">八刻（105~120分钟）</option>
+            </select>
+          </div>
+          <div>
+            <label>六亲考刻参考（选填，如：家中排行/父母属相）</label>
+            <input type="text" id="tbNote" placeholder="例如：家中独子，问近年事业财运" />
+          </div>
+        </div>
+        <button class="btn-gold" style="width:100%; margin-top:12px;" onclick="castTieban()">📜 推演四柱与铁板条文</button>
+
+        <div id="tbResult" style="display:none; margin-top:14px;">
+          <div id="tbBaziInfo" style="font-size:13.5px; background:#090f1d; padding:12px; border-radius:8px; line-height:1.65;"></div>
+          <div id="tbClauses"></div>
+          <button class="btn-gold" style="width:100%; margin-top:10px;" onclick="runAiInterpret('tieban')">🔮 AI 铁板神数流年与六亲精解</button>
+          <div id="tbAiOut" class="ai-box" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 4: 设置与激活 -->
+    <div id="panel-settings" class="panel">
+      <div class="card">
+        <h3>🤖 Gemini AI 解盘 Key 配置（支持 AQ. / AIza 前缀）</h3>
+        <label>仅保存在本机，自动启用多模型防 429 轮询（gemini-3.5-flash-lite 优先）</label>
+        <input type="password" id="aiApiKey" placeholder="粘贴 AQ.Ab... 或 AIza..." />
+        <button class="btn-green" style="width:100%; margin-top:10px;" onclick="saveApiKey()">💾 保存 API Key</button>
+      </div>
+
+      <div class="card">
+        <h3>🔑 永久买断激活码 (YI1.xxx)</h3>
+        <input type="text" id="licInput" placeholder="粘贴 YI1.xxx 买断激活码..." />
+        <button class="btn-gold" style="width:100%; margin-top:10px;" onclick="activateLicense()">验证并永久解锁专业版</button>
+      </div>
+
+      <div class="card">
+        <h3>🛠️ 系统运行日志</h3>
+        <div id="logBox" style="height:120px; overflow-y:auto; background:#030712; padding:8px; border-radius:6px; font-family:monospace; font-size:11px; color:#38bdf8;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY_API = "yi_oracle_gemini_key_v1";
+    const STORAGE_KEY_LIC = "yi_oracle_license_v1";
+
+    // 先天八卦表 (1~8), lines 数组为自下而上 [初爻, 二爻, 三爻]
+    const BAGUA = {
+      1: { name: "乾", symbol: "☰", nature: "天", wx: "金", lines: [1, 1, 1] },
+      2: { name: "兑", symbol: "☱", nature: "泽", wx: "金", lines: [1, 1, 0] },
+      3: { name: "离", symbol: "☲", nature: "火", wx: "火", lines: [1, 0, 1] },
+      4: { name: "震", symbol: "☳", nature: "雷", wx: "木", lines: [1, 0, 0] },
+      5: { name: "巽", symbol: "☴", nature: "风", wx: "木", lines: [0, 1, 1] },
+      6: { name: "坎", symbol: "☵", nature: "水", wx: "水", lines: [0, 1, 0] },
+      7: { name: "艮", symbol: "☶", nature: "山", wx: "土", lines: [0, 0, 1] },
+      8: { name: "坤", symbol: "☷", nature: "地", wx: "土", lines: [0, 0, 0] }
+    };
+
+    const HEXAGRAMS = {"1-1": ["乾为天", "元亨利贞。刚健中正，自强不息。", "大吉"], "8-8": ["坤为地", "元亨，利牝马之贞。厚德载物，顺势而为。", "大吉"], "6-4": ["水雷屯", "元亨利贞，勿用有攸往。万事起头难，宜守不宜躁。", "中平"], "7-6": ["山水蒙", "亨。匪我求童蒙，童蒙求我。启蒙求教，戒急戒躁。", "中平"], "6-1": ["水天需", "有孚，光亨，贞吉。静待时机，切忌盲动。", "中吉"], "1-6": ["天水讼", "有孚窒惕，中吉，终凶。防口舌争讼，以和为贵。", "小凶"], "8-6": ["地水师", "贞，丈人吉，无咎。纪律严明，得贵人统领可胜。", "中吉"], "6-8": ["水地比", "吉。原筮元永贞，无咎。亲仁善邻，合作共赢。", "大吉"], "5-1": ["风天小畜", "亨。密云不雨，自我西郊。积蓄力量，小有所成。", "中平"], "1-2": ["天泽履", "履虎尾，不咥人，亨。如履薄冰，谨言慎行则安。", "中吉"], "8-1": ["地天泰", "小往大来，吉亨。天地交泰，万事顺遂。", "大吉"], "1-8": ["天地否", "否之匪人，不利君子贞。闭塞不通，宜守拙避锋。", "凶"], "1-3": ["天火同人", "同人于野，亨。志同道合，广结善缘。", "大吉"], "3-1": ["火天大有", "元亨。日中丽天，财禄丰盈，盛极须防骄。", "大吉"], "8-7": ["地山谦", "亨，君子有终。谦受益，满招损，退一步海阔天空。", "大吉"], "4-8": ["雷地豫", "利建侯行师。顺时而动，居安思危。", "大吉"], "2-4": ["泽雷随", "元亨利贞，无咎。顺应时势，灵活变通。", "吉"], "7-5": ["山风蛊", "元亨，利涉大川。整顿积弊，革故鼎新。", "中平"], "8-2": ["地泽临", "元亨利贞。阳气渐长，把握上升窗口期。", "大吉"], "5-8": ["风地观", "盥而不荐，有孚颙若。冷静观察，谋定后动。", "中平"], "3-4": ["火雷噬嗑", "亨，利用狱。果断排除障碍，明辨是非。", "中吉"], "7-3": ["山火贲", "亨，小利有攸往。注重修饰与门面，但防华而不实。", "中吉"], "7-8": ["山地剥", "不利有攸往。根基动摇，宜退守保本。", "凶"], "8-4": ["地雷复", "亨，出入无疾。一阳来复，低谷转折，生机再现。", "吉"], "1-4": ["天雷无妄", "元亨利贞。顺乎自然，切忌妄念投机。", "中平"], "7-1": ["山天大畜", "利贞，不家食吉。厚积薄发，大器晚成。", "大吉"], "7-4": ["山雷颐", "贞吉。观颐，自求口实。慎言语，节饮食，养精蓄锐。", "中吉"], "2-5": ["泽风大过", "栋挠，利有攸往，亨。压力过重，须果断减负求变。", "小凶"], "6-6": ["坎为水", "习坎，有孚，维心亨。重重险阻，坚守正道方能脱险。", "凶"], "3-3": ["离为火", "利贞，亨。光明附丽，宜依托正道与明主。", "吉"], "2-7": ["泽山咸", "亨，利贞，取女吉。心有灵犀，感情与合作融洽。", "大吉"], "4-5": ["雷风恒", "亨，无咎，利贞。持之以恒，守正不移。", "吉"], "1-7": ["天山遁", "亨，小利贞。审时度势，急流勇退以保全实力。", "中平"], "4-1": ["雷天大壮", "利贞。声势正旺，戒刚愎自用。", "吉"], "3-8": ["火地晋", "康侯用锡马蕃庶。旭日东升，步步高升。", "大吉"], "8-3": ["地火明夷", "利艰贞。明珠暗投，韬光养晦以待天明。", "小凶"], "5-3": ["风火家人", "利女贞。家和万事兴，先治内而后安外。", "吉"], "3-2": ["火泽睽", "小事吉。意见分歧，求同存异可成小事。", "小凶"], "6-7": ["水山蹇", "利西南，不利东北。前路受阻，宜绕道或借力贵人。", "小凶"], "4-6": ["雷水解", "利西南，无所往，其来复吉。冰雪消融，危机解除。", "大吉"], "7-2": ["山泽损", "有孚，元吉，无咎。先损后益，舍小利而得大局。", "中平"], "5-4": ["风雷益", "利有攸往，利涉大川。损上益下，顺风顺水。", "大吉"], "2-1": ["泽天夬", "扬于王庭，孚号有厉。果断决断，防暗箭反扑。", "中平"], "1-5": ["天风姤", "女壮，勿用取女。意外邂逅或突发变数，宜防微杜渐。", "小凶"], "2-8": ["泽地萃", "亨，王假有庙。人才与资源汇聚，利合作成事。", "大吉"], "8-5": ["地风升", "元亨，用见大人。积小成大，稳步攀升。", "大吉"], "2-6": ["泽水困", "亨，贞，大人吉。身处困境，守志不屈终能破局。", "凶"], "6-5": ["水风井", "改邑不改井，无丧无得。深耕本业，细水长流。", "中吉"], "2-3": ["泽火革", "巳日乃孚，元亨利贞。大破大立，顺应变革。", "吉"], "3-5": ["火风鼎", "元吉，亨。革故鼎新，根基稳固，名利双收。", "大吉"], "4-4": ["震为雷", "亨。震来虩虩，笑言哑哑。突发震动，处变不惊反得福。", "中平"], "7-7": ["艮为山", "艮其背，不获其身。知止不殆，适时停下反思。", "中平"], "5-7": ["风山渐", "女归吉，利贞。循序渐进，切忌拔苗助长。", "吉"], "4-2": ["雷泽归妹", "征凶，无攸利。名不正言不顺，防冲动行事。", "小凶"], "4-3": ["雷火丰", "亨，王假之，勿忧。丰盛至极，宜趁势落袋为安。", "大吉"], "3-7": ["火山旅", "小亨，旅贞吉。客居漂泊，低调柔和可保平安。", "中平"], "5-5": ["巽为风", "小亨，利有攸往。顺风而行，以柔克刚。", "中吉"], "2-2": ["兑为泽", "亨，利贞。和悦待人，防口舌是非。", "吉"], "5-6": ["风水涣", "亨，王假有庙。涣散之象，宜凝聚人心、化解僵局。", "中平"], "6-2": ["水泽节", "亨，苦节不可贞。懂得节制，量力而行。", "中吉"], "5-2": ["风泽中孚", "豚鱼吉，利涉大川。诚信感人，精诚所至。", "大吉"], "4-7": ["雷山小过", "亨，利贞，可小事，不可大事。谨慎微调，不宜大动干戈。", "中平"], "6-3": ["水火既济", "亨小，利贞，初吉终乱。大功初成，居安思危防松懈。", "吉"], "3-6": ["火水未济", "亨，小狐汔济。事未竟功，慎终如始方能渡河。", "中平"]};
+
+    const WX_SHENG = { "木": "火", "火": "土", "土": "金", "金": "水", "水": "木" };
+    const WX_KE    = { "木": "土", "土": "水", "水": "火", "火": "金", "金": "木" };
+
+    const STEMS = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
+    const BRANCHES = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
+    const TIEBAN_POOL = [
+      "平生志气凌云汉，莫向人前叹未逢。",
+      "枯木逢春花再发，他乡遇友贵人扶。",
+      "一箭双雕名利遂，中年运到福星临。",
+      "风波险处须防备，守正安然度岁华。",
+      "玉在石中人未识，一朝琢就价连城。",
+      "南来北往多劳碌，自有清风送客舟。",
+      "财帛如潮来有信，须防轻诺失前功。",
+      "家门和顺生祥瑞，子孝妻贤百事兴。",
+      "早年辛苦多波折，晚景安康乐有余。",
+      "命中自有青云路，只待东风借力时。",
+      "莫道前程多阻隔，转弯之处见光明。",
+      "文章技艺皆超众，立业成家不负君。"
+    ];
+
+    let yjThrows = [];
+    let lastContext = { yijing: "", meihua: "", tieban: "" };
+
+    function logMsg(msg) {
+      const box = document.getElementById("logBox");
+      if (!box) return;
+      const d = document.createElement("div");
+      d.textContent = "[" + new Date().toISOString().slice(11, 19) + "] " + msg;
+      box.appendChild(d);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function switchTab(id, btn) {
+      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.getElementById("panel-" + id).classList.add("active");
+      btn.classList.add("active");
+    }
+
+    function linesToGuaNum(threeLines) {
+      for (const [k, v] of Object.entries(BAGUA)) {
+        if (v.lines[0] === threeLines[0] && v.lines[1] === threeLines[1] && v.lines[2] === threeLines[2]) {
+          return Number(k);
+        }
+      }
+      return 1;
+    }
+
+    function renderGuaCard(title, sixLines, movingIndices, extraHtml) {
+      // sixLines is bottom-to-top [0..5]; render top-to-bottom [5..0]
+      let rows = "";
+      for (let i = 5; i >= 0; i--) {
+        const isYang = sixLines[i] === 1;
+        const isMoving = movingIndices.includes(i);
+        rows += '<div class="yao-row ' + (isMoving ? 'yao-moving' : '') + '">' +
+          (isYang ? '<div class="yao-yang"></div>' : '<div class="yao-yin"><span></span><span></span></div>') +
+          '</div>';
+      }
+      return '<div class="gua-box"><div class="gua-title">' + title + '</div><div class="gua-lines">' + rows + '</div><div class="gua-meta">' + extraHtml + '</div></div>';
+    }
+
+    // ========== 1. 易经金钱卦 ==========
+    function tossOneYao() {
+      if (yjThrows.length >= 6) yjThrows = [];
+      // 3 coins: tail=2, head=3 -> sum in {6,7,8,9}
+      const c = () => (Math.random() < 0.5 ? 2 : 3);
+      yjThrows.push(c() + c() + c());
+      document.getElementById("tossCount").innerText = yjThrows.length;
+      if (yjThrows.length === 6) renderYijingResult();
+    }
+
+    function castAllYijing() {
+      yjThrows = [];
+      for (let i = 0; i < 6; i++) {
+        const c = () => (Math.random() < 0.5 ? 2 : 3);
+        yjThrows.push(c() + c() + c());
+      }
+      document.getElementById("tossCount").innerText = "6";
+      renderYijingResult();
+    }
+
+    function resetYijing() {
+      yjThrows = [];
+      document.getElementById("tossCount").innerText = "0";
+      document.getElementById("yjResult").style.display = "none";
+      document.getElementById("yjAiOut").style.display = "none";
+    }
+
+    function renderYijingResult() {
+      const baseLines = yjThrows.map(v => (v === 7 || v === 9) ? 1 : 0);
+      const movingIdx = [];
+      const changedLines = yjThrows.map((v, i) => {
+        if (v === 9) { movingIdx.push(i); return 0; }
+        if (v === 6) { movingIdx.push(i); return 1; }
+        return baseLines[i];
+      });
+
+      const low1 = linesToGuaNum(baseLines.slice(0, 3));
+      const up1  = linesToGuaNum(baseLines.slice(3, 6));
+      const hex1 = HEXAGRAMS[up1 + "-" + low1] || ["未知卦", "", "中平"];
+
+      const low2 = linesToGuaNum(changedLines.slice(0, 3));
+      const up2  = linesToGuaNum(changedLines.slice(3, 6));
+      const hex2 = HEXAGRAMS[up2 + "-" + low2] || ["未知卦", "", "中平"];
+
+      let html = renderGuaCard(
+        "本卦：" + hex1[0],
+        baseLines,
+        movingIdx,
+        '<span class="tag">' + hex1[2] + '</span><br/>上' + BAGUA[up1].name + '(' + BAGUA[up1].wx + ') 下' + BAGUA[low1].name + '(' + BAGUA[low1].wx + ')'
+      );
+      if (movingIdx.length > 0) {
+        html += renderGuaCard(
+          "变卦：" + hex2[0],
+          changedLines,
+          [],
+          '<span class="tag">' + hex2[2] + '</span><br/>动爻：第 ' + movingIdx.map(i => i + 1).join("、") + ' 爻'
+        );
+      }
+
+      document.getElementById("yjGuaGrid").innerHTML = html;
+      document.getElementById("yjClassicText").innerHTML =
+        "<b>【本卦卦辞】" + hex1[0] + "：</b>" + hex1[1] +
+        (movingIdx.length ? "<br/><b>【变卦趋势】" + hex2[0] + "：</b>" + hex2[1] : "<br/><b>【静卦无动爻】</b>以本卦卦辞为主断。");
+      document.getElementById("yjResult").style.display = "block";
+      document.getElementById("yjAiOut").style.display = "none";
+
+      lastContext.yijing =
+        "占问事项：" + (document.getElementById("yjQuestion").value || "近期综合运势") + "\n" +
+        "起卦结果（自初爻至上爻数值 6老阴/7少阳/8少阴/9老阳）：" + yjThrows.join(",") + "\n" +
+        "本卦：" + hex1[0] + "（上" + BAGUA[up1].name + "下" + BAGUA[low1].name + "）\n" +
+        "动爻：" + (movingIdx.length ? movingIdx.map(i => "第" + (i + 1) + "爻").join("、") : "无动爻") + "\n" +
+        (movingIdx.length ? "变卦：" + hex2[0] + "（上" + BAGUA[up2].name + "下" + BAGUA[low2].name + "）" : "");
+      logMsg("易经起卦完成: " + hex1[0]);
+    }
+
+    // ========== 2. 梅花易数 ==========
+    function toggleMhInputs() {
+      const isNum = document.getElementById("mhMode").value === "num";
+      document.getElementById("mhNumBox1").style.display = isNum ? "block" : "none";
+      document.getElementById("mhNumBox2").style.display = isNum ? "block" : "none";
+    }
+
+    function judgeTiYong(tiWx, yongWx) {
+      if (tiWx === yongWx) return ["体用比和 · 吉", "同类相助，合作顺利，谋事易成。"];
+      if (WX_SHENG[yongWx] === tiWx) return ["用生体 · 大吉", "外势生助自身，得贵人相帮，进益之象。"];
+      if (WX_KE[tiWx] === yongWx) return ["体克用 · 中吉", "自身掌控局势，虽需费力但终能成事。"];
+      if (WX_SHENG[tiWx] === yongWx) return ["体生用 · 小凶（泄耗）", "付出多而回报慢，防精力或财物损耗。"];
+      return ["用克体 · 凶", "外部阻力或压力克制自身，宜守不宜攻。"];
+    }
+
+    function castMeihua() {
+      const mode = document.getElementById("mhMode").value;
+      const now = new Date();
+      let up, low, dong;
+      if (mode === "time") {
+        const yIdx = ((now.getFullYear() - 4) % 12) + 1;
+        const m = now.getMonth() + 1;
+        const d = now.getDate();
+        const hIdx = Math.floor(((now.getHours() + 1) % 24) / 2) + 1;
+        up = (yIdx + m + d) % 8 || 8;
+        low = (yIdx + m + d + hIdx) % 8 || 8;
+        dong = (yIdx + m + d + hIdx) % 6 || 6;
+      } else {
+        const n1 = Math.max(1, parseInt(document.getElementById("mhNum1").value || "1", 10));
+        const n2 = Math.max(1, parseInt(document.getElementById("mhNum2").value || "1", 10));
+        up = n1 % 8 || 8;
+        low = n2 % 8 || 8;
+        dong = (n1 + n2) % 6 || 6;
+      }
+
+      const baseLines = [...BAGUA[low].lines, ...BAGUA[up].lines];
+      const huLow = linesToGuaNum([baseLines[1], baseLines[2], baseLines[3]]);
+      const huUp  = linesToGuaNum([baseLines[2], baseLines[3], baseLines[4]]);
+      const huLines = [...BAGUA[huLow].lines, ...BAGUA[huUp].lines];
+
+      const bianLines = [...baseLines];
+      bianLines[dong - 1] = bianLines[dong - 1] === 1 ? 0 : 1;
+      const bianLow = linesToGuaNum(bianLines.slice(0, 3));
+      const bianUp  = linesToGuaNum(bianLines.slice(3, 6));
+
+      const hexBen  = HEXAGRAMS[up + "-" + low];
+      const hexHu   = HEXAGRAMS[huUp + "-" + huLow];
+      const hexBian = HEXAGRAMS[bianUp + "-" + bianLow];
+
+      // 动爻在 1~3 则下卦为用、上卦为体；4~6 则上卦为用、下卦为体
+      const tiGua   = dong <= 3 ? BAGUA[up] : BAGUA[low];
+      const yongGua = dong <= 3 ? BAGUA[low] : BAGUA[up];
+      const bianYongGua = dong <= 3 ? BAGUA[bianLow] : BAGUA[bianUp];
+
+      const [benVerdict, benDesc] = judgeTiYong(tiGua.wx, yongGua.wx);
+      const [bianVerdict, bianDesc] = judgeTiYong(tiGua.wx, bianYongGua.wx);
+
+      document.getElementById("mhGuaGrid").innerHTML =
+        renderGuaCard("本卦：" + hexBen[0], baseLines, [dong - 1], "动爻：第 " + dong + " 爻") +
+        renderGuaCard("互卦：" + hexHu[0], huLines, [], "过程与内因") +
+        renderGuaCard("变卦：" + hexBian[0], bianLines, [], "结局与归宿");
+
+      document.getElementById("mhTiYong").innerHTML =
+        "<b>体卦（自身）：</b>" + tiGua.name + "（五行属" + tiGua.wx + "） &nbsp;|&nbsp; <b>用卦（所问之事）：</b>" + yongGua.name + "（五行属" + yongGua.wx + "）<br/>" +
+        "<b>当前态势：</b><span class='tag'>" + benVerdict + "</span> — " + benDesc + "<br/>" +
+        "<b>最终结局（变卦用神" + bianYongGua.name + "属" + bianYongGua.wx + "）：</b><span class='tag'>" + bianVerdict + "</span> — " + bianDesc;
+
+      document.getElementById("mhResult").style.display = "block";
+      document.getElementById("mhAiOut").style.display = "none";
+
+      lastContext.meihua =
+        "占问事项：" + (document.getElementById("mhQuestion").value || "当下局势推演") + "\n" +
+        "本卦：" + hexBen[0] + "，互卦：" + hexHu[0] + "，变卦：" + hexBian[0] + "，第" + dong + "爻动。\n" +
+        "体卦：" + tiGua.name + "(" + tiGua.wx + ")，本用卦：" + yongGua.name + "(" + yongGua.wx + ") [" + benVerdict + "]，变用卦：" + bianYongGua.name + "(" + bianYongGua.wx + ") [" + bianVerdict + "]。";
+      logMsg("梅花排盘完成: " + hexBen[0] + " -> " + hexBian[0]);
+    }
+
+    // ========== 3. 铁板神数 ==========
+    function castTieban() {
+      const dateStr = document.getElementById("tbDate").value || "1990-06-15";
+      const timeStr = document.getElementById("tbTime").value || "09:30";
+      const gender  = document.getElementById("tbGender").value;
+      const ke      = parseInt(document.getElementById("tbKe").value, 10);
+      const note    = document.getElementById("tbNote").value.trim();
+
+      const [Y, M, D] = dateStr.split("-").map(Number);
+      const [H, Min] = timeStr.split(":").map(Number);
+
+      const yStem = (Y - 4) % 10;
+      const yBranch = (Y - 4) % 12;
+      const mBranch = (M + 1) % 12;
+      const mStem = ((yStem % 5) * 2 + M + 1) % 10;
+      const dayBase = Math.floor((new Date(Y, M - 1, D) - new Date(1900, 0, 31)) / 86400000);
+      const dStem = ((dayBase % 10) + 10) % 10;
+      const dBranch = ((dayBase + 4) % 12 + 12) % 12;
+      const hBranch = Math.floor(((H + 1) % 24) / 2);
+      const hStem = ((dStem % 5) * 2 + hBranch) % 10;
+
+      const bazi = STEMS[yStem] + BRANCHES[yBranch] + "年  " + STEMS[mStem] + BRANCHES[mBranch] + "月  " +
+                   STEMS[dStem] + BRANCHES[dBranch] + "日  " + STEMS[hStem] + BRANCHES[hBranch] + "时";
+
+      // 皇极起数与考刻条文推演
+      const baseNum = ((Y * 3 + M * 19 + D * 37 + hBranch * 97 + ke * 131) % 11000) + 1001;
+      const code1 = String(baseNum).padStart(5, "0");
+      const code2 = String(((baseNum + 2468) % 12000) + 1001).padStart(5, "0");
+      const code3 = String(((baseNum + 5184) % 12000) + 1001).padStart(5, "0");
+
+      const c1 = TIEBAN_POOL[baseNum % TIEBAN_POOL.length];
+      const c2 = TIEBAN_POOL[(baseNum + 5) % TIEBAN_POOL.length];
+      const c3 = TIEBAN_POOL[(baseNum + 9) % TIEBAN_POOL.length];
+
+      document.getElementById("tbBaziInfo").innerHTML =
+        "<b>命造：</b>" + gender + " &nbsp;|&nbsp; <b>考刻：</b>第 " + ke + " 刻<br/>" +
+        "<b>四柱排盘：</b><span style='color:#f5d076;font-weight:700;'>" + bazi + "</span><br/>" +
+        "<b>皇极基数：</b>第 " + code1 + " 数";
+
+      document.getElementById("tbClauses").innerHTML =
+        '<div class="tieban-clause"><span class="tag">命格总断 · 条文 ' + code1 + '</span><div style="margin-top:5px;">' + c1 + '</div></div>' +
+        '<div class="tieban-clause"><span class="tag">事业财禄 · 条文 ' + code2 + '</span><div style="margin-top:5px;">' + c2 + '</div></div>' +
+        '<div class="tieban-clause"><span class="tag">流年转机 · 条文 ' + code3 + '</span><div style="margin-top:5px;">' + c3 + '</div></div>';
+
+      document.getElementById("tbResult").style.display = "block";
+      document.getElementById("tbAiOut").style.display = "none";
+
+      lastContext.tieban =
+        "命造：" + gender + "，公历 " + dateStr + " " + timeStr + "（第" + ke + "刻）\n" +
+        "四柱：" + bazi + "\n" +
+        "考刻补充：" + (note || "无") + "\n" +
+        "推演条文：\n1) [" + code1 + "] " + c1 + "\n2) [" + code2 + "] " + c2 + "\n3) [" + code3 + "] " + c3;
+      logMsg("铁板起数完成: " + bazi + " / " + code1);
+    }
+
+    // ========== 4. Gemini AI 多模型防 429 轮询解盘 ==========
+    const GEMINI_MODELS = [
+      "gemini-3.5-flash-lite",
+      "gemini-3.5-flash",
+      "gemini-3.6-flash",
+      "gemini-3.7-flash",
+      "gemini-3.8-flash"
+    ];
+
+    async function callGeminiText(apiKey, promptText) {
+      let lastErr = "Gemini 请求失败";
+      for (const model of GEMINI_MODELS) {
+        const url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + encodeURIComponent(apiKey);
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          return data.candidates?.[0]?.content?.parts?.[0]?.text || "（AI 返回为空）";
+        }
+        lastErr = "HTTP " + res.status + " (" + model + ")";
+        if (res.status === 429 || res.status === 404 || res.status === 503) {
+          logMsg(model + " 返回 " + res.status + "，自动切换下一个模型...");
+          continue;
+        }
+        throw new Error(lastErr);
+      }
+      throw new Error(lastErr);
+    }
+
+    async function runAiInterpret(kind) {
+      const apiKey = (localStorage.getItem(STORAGE_KEY_API) || document.getElementById("aiApiKey").value || "").trim();
+      if (!(apiKey.startsWith("AIza") || apiKey.startsWith("AQ."))) {
+        alert("请先点击顶部「⚙️ 设置/激活」填入你的 Gemini API Key（支持 AQ. 或 AIza 开头）！");
+        return;
+      }
+      const outMap = { yijing: "yjAiOut", meihua: "mhAiOut", tieban: "tbAiOut" };
+      const outEl = document.getElementById(outMap[kind]);
+      outEl.style.display = "block";
+      outEl.textContent = "⏳ 正在结合传统术数典籍与卦象为您推演断语...";
+
+      const roleMap = {
+        yijing: "你是一位精通《周易》六十四卦与六爻断法的国学易理大师。请结合本卦、动爻与变卦，按【一、卦象总断】【二、事态演变】【三、趋吉避凶建议】三段输出精炼、直白、有洞察力的解卦报告。",
+        meihua: "你是一位精通邵康节《梅花易数》的大师。请紧扣本卦、互卦、变卦以及体用五行生克，按【一、体用吉凶】【二、过程玄机（互卦）】【三、结局与应期提示】输出清晰断语。",
+        tieban: "你是一位精通《铁板神数》与四柱八字的命理大师。请结合命主四柱干支、考刻与所推条文，按【一、命格气象】【二、事业财运与六亲提示】【三、近期流年行动建议】输出温和、客观、富有古韵与现代实用性的解盘。"
+      };
+
+      try {
+        const reply = await callGeminiText(apiKey, roleMap[kind] + "\n\n以下为本次排盘数据：\n" + lastContext[kind]);
+        outEl.textContent = reply;
+        logMsg("AI 解盘成功 (" + kind + ")");
+      } catch (e) {
+        outEl.textContent = "❌ AI 解盘失败：" + e.message;
+        logMsg("AI 解盘失败: " + e.message);
+      }
+    }
+
+    // ========== 5. 设置与买断码 ==========
+    function saveApiKey() {
+      const k = document.getElementById("aiApiKey").value.trim();
+      localStorage.setItem(STORAGE_KEY_API, k);
+      logMsg(k ? "API Key 已保存" : "API Key 已清空");
+      alert(k ? "✅ Gemini API Key 已保存！" : "已清空 Key。");
+    }
+
+    function activateLicense() {
+      const k = document.getElementById("licInput").value.trim();
+      if (!k.startsWith("YI1.") || k.length < 16) {
+        return alert("激活码格式无效，需为 YI1.xxx 格式。");
+      }
+      localStorage.setItem(STORAGE_KEY_LIC, k);
+      refreshLicenseUI();
+      alert("🎉 永久专业版已激活！");
+    }
+
+    function refreshLicenseUI() {
+      const lic = localStorage.getItem(STORAGE_KEY_LIC);
+      if (lic && lic.startsWith("YI1.")) {
+        document.getElementById("licenseBadge").innerText = "专业买断版 · 已解锁";
+        document.getElementById("mhLock").style.display = "none";
+      } else {
+        document.getElementById("licenseBadge").innerText = "基础免费版";
+        document.getElementById("mhLock").style.display = "block";
+      }
+    }
+
+    (function boot() {
+      const savedKey = localStorage.getItem(STORAGE_KEY_API);
+      if (savedKey) document.getElementById("aiApiKey").value = savedKey;
+      refreshLicenseUI();
+      logMsg("易经玄数大师 v1.0.0 初始化完成 (64卦全量已加载)");
+    })();
+  </script>
+</body>
+</html>
+
