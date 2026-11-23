@@ -21,9 +21,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Build 12,000 Tieban DB & Install Public Libraries
+      - name: Install Public Libraries & Capacitor Android
         run: |
-          python3 scripts/build_tieban_db.py
           npm install
           npm run prepare-vendor
           npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6

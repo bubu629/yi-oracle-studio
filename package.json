@@ -1,8 +1,8 @@
 {
   "name": "yi-oracle-studio",
-  "version": "1.0.2",
+  "version": "1.0.1",
   "private": true,
-  "description": "易经玄数大师 — 全离线命理典籍库 (周易64卦 + 梅花类象 + 节气八字 + 12,000条铁板神数)",
+  "description": "易经玄数大师 — 全离线命理典籍库 (周易64卦 + 梅花类象 + 节气八字 + 铁板神数)",
   "dependencies": {
     "lunar-javascript": "^1.7.8"
   },

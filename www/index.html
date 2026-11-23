@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>易经玄数大师 v1.0.0 — 易经·梅花·铁板神数</title>
-  <!-- 优先加载打包进本地 APK 的开源 lunar-javascript@1.7.8 历法八字库，失败则回退 CDN -->
+  <title>易经玄数大师 v1.0.1 — 离线全功能命理典籍</title>
   <script src="vendor/lunar.min.js" onerror="var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.8/lunar.min.js';document.head.appendChild(s);"></script>
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -30,7 +29,7 @@
     }
     .almanac-bar {
       background: rgba(9, 15, 29, 0.85); border: 1px solid rgba(212, 175, 55, 0.25);
-      border-radius: 10px; padding: 9px 12px; margin-bottom: 12px; font-size: 12px; color: #cbd5e1; line-height: 1.5;
+      border-radius: 10px; padding: 9px 12px; margin-bottom: 12px; font-size: 12px; color: #cbd5e1; line-height: 1.55;
     }
     .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
     .tab-btn {
@@ -81,12 +80,17 @@
       display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700;
       background: rgba(212, 175, 55, 0.16); color: #f5d076; border: 1px solid rgba(212, 175, 55, 0.4);
     }
+    .offline-report {
+      background: #090f1d; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 10px;
+      padding: 12px; margin-top: 10px; font-size: 13px; line-height: 1.7; color: #e2e8f0;
+    }
+    .offline-report h4 { margin: 0 0 6px 0; color: #38bdf8; font-size: 13.5px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin-top: 8px; }
+    .mini-box { background: rgba(15, 23, 42, 0.9); border: 1px solid #2a3f5f; border-radius: 8px; padding: 9px; font-size: 12.5px; }
     .bazi-table {
       width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12.5px; text-align: center;
     }
-    .bazi-table th, .bazi-table td {
-      border: 1px solid #2a3f5f; padding: 6px 4px; background: #090f1d;
-    }
+    .bazi-table th, .bazi-table td { border: 1px solid #2a3f5f; padding: 6px 4px; background: #090f1d; }
     .bazi-table th { color: #94a3b8; background: #0f172a; }
     .ai-box {
       background: #070c18; border: 1px solid #38bdf8; border-radius: 10px;
@@ -102,26 +106,25 @@
   <div class="container">
     <div class="topbar">
       <div>
-        <div class="brand">☯️ 易经玄数大师 v1.0.0</div>
-        <div class="sub">权威历法库 lunar-javascript · 周易64卦典籍 · 梅花易数 · 铁板神数</div>
+        <div class="brand">☯️ 易经玄数大师 v1.0.1</div>
+        <div class="sub">100% 离线排盘与典籍详批 · 易经64卦 · 梅花类象 · 八字五行 · 铁板神数</div>
       </div>
-      <div id="licenseBadge" class="badge">基础免费版</div>
+      <div id="licenseBadge" class="badge">离线完整版</div>
     </div>
 
-    <!-- 每日黄历与实时干支栏（由 lunar-javascript 实时驱动） -->
-    <div id="almanacBar" class="almanac-bar">⏳ 正在加载权威农历与节气历法引擎...</div>
+    <div id="almanacBar" class="almanac-bar">⏳ 正在加载离线权威农历与节气历法引擎...</div>
 
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('yijing', this)">🪙 易经起卦</button>
       <button class="tab-btn" onclick="switchTab('meihua', this)">🌸 梅花易数</button>
-      <button class="tab-btn" onclick="switchTab('tieban', this)">📜 铁板神数</button>
-      <button class="tab-btn" onclick="switchTab('settings', this)">⚙️ 设置/激活</button>
+      <button class="tab-btn" onclick="switchTab('tieban', this)">📜 铁板八字</button>
+      <button class="tab-btn" onclick="switchTab('settings', this)">⚙️ 设置/AI</button>
     </div>
 
     <!-- PANEL 1: 易经金钱卦 -->
     <div id="panel-yijing" class="panel active">
       <div class="card">
-        <h3>🪙 周易 · 六爻金钱起卦（含《周易》卦辞与《大象传》原文）</h3>
+        <h3>🪙 周易 · 六爻金钱起卦（离线典籍 + 事业/财运/感情详批）</h3>
         <label>心中默念所问之事：</label>
         <input type="text" id="yjQuestion" placeholder="例如：今年下半年换工作或投资项目是否顺利？" />
         <div class="row" style="margin-top:12px;">
@@ -131,8 +134,8 @@
         </div>
         <div id="yjResult" style="display:none; margin-top:14px;">
           <div class="gua-grid" id="yjGuaGrid"></div>
-          <div id="yjClassicText" style="font-size:13px; color:#cbd5e1; line-height:1.65; background:#090f1d; padding:11px; border-radius:8px;"></div>
-          <button class="btn-gold" style="width:100%; margin-top:10px;" onclick="runAiInterpret('yijing')">🔮 AI 易学大师深度解卦</button>
+          <div id="yjClassicText" class="offline-report"></div>
+          <button class="btn-slate" style="width:100%; margin-top:10px; border:1px solid #38bdf8;" onclick="runAiInterpret('yijing')">🔮 （可选联网）AI 易学大师定制追问解卦</button>
           <div id="yjAiOut" class="ai-box" style="display:none;"></div>
         </div>
       </div>
@@ -141,7 +144,7 @@
     <!-- PANEL 2: 梅花易数 -->
     <div id="panel-meihua" class="panel">
       <div class="card">
-        <h3>🌸 梅花易数 · 真农历年月日时起卦与体用生克</h3>
+        <h3>🌸 梅花易数 · 真农历排盘 + 体用生克 + 万物类象与应期</h3>
         <label>所占何事：</label>
         <input type="text" id="mhQuestion" placeholder="例如：这笔合作能否谈成？何时见应期？" />
         <div class="row">
@@ -161,21 +164,21 @@
             <input type="number" id="mhNum2" value="66" min="1" />
           </div>
         </div>
-        <button class="btn-gold" style="width:100%; margin-top:12px;" onclick="castMeihua()">🌸 立即梅花排盘</button>
+        <button class="btn-gold" style="width:100%; margin-top:12px;" onclick="castMeihua()">🌸 立即梅花排盘（离线详批）</button>
 
         <div id="mhResult" style="display:none; margin-top:14px;">
           <div class="gua-grid" id="mhGuaGrid"></div>
-          <div id="mhTiYong" style="font-size:13.5px; color:#e2e8f0; background:#090f1d; padding:12px; border-radius:8px; line-height:1.65;"></div>
-          <button class="btn-gold" style="width:100%; margin-top:10px;" onclick="runAiInterpret('meihua')">🔮 AI 梅花体用与应期精断</button>
+          <div id="mhTiYong" class="offline-report"></div>
+          <button class="btn-slate" style="width:100%; margin-top:10px; border:1px solid #38bdf8;" onclick="runAiInterpret('meihua')">🔮 （可选联网）AI 梅花深度精断</button>
           <div id="mhAiOut" class="ai-box" style="display:none;"></div>
         </div>
       </div>
     </div>
 
-    <!-- PANEL 3: 铁板神数 -->
+    <!-- PANEL 3: 铁板神数 + 子平八字 -->
     <div id="panel-tieban" class="panel">
       <div class="card">
-        <h3>📜 铁板神数 · 精准节气八字、十神纳音、大运与考刻条文</h3>
+        <h3>📜 铁板神数 · 精准节气八字 + 日主五行旺衰 + 四维条文</h3>
         <div class="row">
           <div>
             <label>公历出生日期</label>
@@ -212,12 +215,12 @@
             <input type="text" id="tbNote" placeholder="例如：家中排行/父母属相/问流年" />
           </div>
         </div>
-        <button class="btn-gold" style="width:100%; margin-top:12px;" onclick="castTieban()">📜 精准排盘与铁板推演</button>
+        <button class="btn-gold" style="width:100%; margin-top:12px;" onclick="castTieban()">📜 精准排盘与离线详批</button>
 
         <div id="tbResult" style="display:none; margin-top:14px;">
-          <div id="tbBaziInfo" style="font-size:13px; background:#090f1d; padding:12px; border-radius:8px; line-height:1.65;"></div>
+          <div id="tbBaziInfo" class="offline-report"></div>
           <div id="tbClauses"></div>
-          <button class="btn-gold" style="width:100%; margin-top:10px;" onclick="runAiInterpret('tieban')">🔮 AI 铁板神数与大运流年精解</button>
+          <button class="btn-slate" style="width:100%; margin-top:10px; border:1px solid #38bdf8;" onclick="runAiInterpret('tieban')">🔮 （可选联网）AI 铁板与流年深度精解</button>
           <div id="tbAiOut" class="ai-box" style="display:none;"></div>
         </div>
       </div>
@@ -226,8 +229,8 @@
     <!-- PANEL 4: 设置与激活 -->
     <div id="panel-settings" class="panel">
       <div class="card">
-        <h3>🤖 Gemini AI 解盘 Key 配置（支持 AQ. / AIza 前缀）</h3>
-        <label>仅保存在本机，自动启用多模型防 429 轮询（gemini-3.5-flash-lite 优先）</label>
+        <h3>🤖 （可选）Gemini AI 深度解盘 Key 配置</h3>
+        <label>不填 Key 也可 100% 离线使用全部排盘与典籍详批；填入后可解锁 AI 定制追问（支持 AQ. / AIza 前缀）</label>
         <input type="password" id="aiApiKey" placeholder="粘贴 AQ.Ab... 或 AIza..." />
         <button class="btn-green" style="width:100%; margin-top:10px;" onclick="saveApiKey()">💾 保存 API Key</button>
       </div>
@@ -239,7 +242,7 @@
       </div>
 
       <div class="card">
-        <h3>🛠️ 系统与开源库诊断日志</h3>
+        <h3>🛠️ 系统与离线数据库诊断日志</h3>
         <div id="logBox" style="height:120px; overflow-y:auto; background:#030712; padding:8px; border-radius:6px; font-family:monospace; font-size:11px; color:#38bdf8;"></div>
       </div>
     </div>
@@ -260,76 +263,24 @@
       8: { name: "坤", symbol: "☷", nature: "地", wx: "土", lines: [0, 0, 0] }
     };
 
-    const HEXAGRAMS = {"1-1": ["乾为天", "乾：元，亨，利，贞。", "天行健，君子以自强不息。", "大吉"], "8-8": ["坤为地", "坤：元，亨，利牝马之贞。君子有攸往，先迷后得主，利。", "地势坤，君子以厚德载物。", "大吉"], "6-4": ["水雷屯", "屯：元，亨，利，贞。勿用有攸往，利建侯。", "云雷，屯；君子以经纶。", "中平"], "7-6": ["山水蒙", "蒙：亨。匪我求童蒙，童蒙求我。初噬告，再三渎，渎则不告。利贞。", "山下出泉，蒙；君子以果行育德。", "中平"], "6-1": ["水天需", "需：有孚，光亨，贞吉。利涉大川。", "云上于天，需；君子以饮食宴乐。", "中吉"], "1-6": ["天水讼", "讼：有孚，窒惕，中吉，终凶。利见大人，不利涉大川。", "天与水违行，讼；君子以作事谋始。", "小凶"], "8-6": ["地水师", "师：贞，丈人吉，无咎。", "地中有水，师；君子以容民畜众。", "中吉"], "6-8": ["水地比", "比：吉。原筮元永贞，无咎。不宁方来，后夫凶。", "地上有水，比；先王以建万国，亲诸侯。", "大吉"], "5-1": ["风天小畜", "小畜：亨。密云不雨，自我西郊。", "风行天上，小畜；君子以懿文德。", "中平"], "1-2": ["天泽履", "履：履虎尾，不咥人，亨。", "上天下泽，履；君子以辨上下，定民志。", "中吉"], "8-1": ["地天泰", "泰：小往大来，吉，亨。", "天地交，泰；后以财成天地之道，辅相天地之宜。", "大吉"], "1-8": ["天地否", "否：否之匪人，不利君子贞，大往小来。", "天地不交，否；君子以俭德辟难，不可荣以禄。", "凶"], "1-3": ["天火同人", "同人：同人于野，亨。利涉大川，利君子贞。", "天与火，同人；君子以类族辨物。", "大吉"], "3-1": ["火天大有", "大有：元亨。", "火在天上，大有；君子以遏恶扬善，顺天休命。", "大吉"], "8-7": ["地山谦", "谦：亨，君子有终。", "地中有山，谦；君子以裒多益寡，称物平施。", "大吉"], "4-8": ["雷地豫", "豫：利建侯行师。", "雷出地奋，豫；先王以作乐崇德。", "大吉"], "2-4": ["泽雷随", "随：元亨利贞，无咎。", "泽中有雷，随；君子以向晦入宴息。", "吉"], "7-5": ["山风蛊", "蛊：元亨，利涉大川。先甲三日，后甲三日。", "山下有风，蛊；君子以振民育德。", "中平"], "8-2": ["地泽临", "临：元，亨，利，贞。至于八月有凶。", "泽上有地，临；君子以教思无穷，容保民无疆。", "大吉"], "5-8": ["风地观", "观：盥而不荐，有孚颙若。", "风行地上，观；先王以省方，观民设教。", "中平"], "3-4": ["火雷噬嗑", "噬嗑：亨。利用狱。", "雷电，噬嗑；先王以明罚敕法。", "中吉"], "7-3": ["山火贲", "贲：亨。小利有攸往。", "山下有火，贲；君子以明庶政，无敢折狱。", "中吉"], "7-8": ["山地剥", "剥：不利有攸往。", "山附于地，剥；上以厚下安宅。", "凶"], "8-4": ["地雷复", "复：亨。出入无疾，朋来无咎。反复其道，七日来复，利有攸往。", "雷在地中，复；先王以至日闭关。", "吉"], "1-4": ["天雷无妄", "无妄：元，亨，利，贞。其匪正有眚，不利有攸往。", "天下雷行，物与无妄；先王以茂对时育万物。", "中平"], "7-1": ["山天大畜", "大畜：利贞，不家食吉，利涉大川。", "天在山中，大畜；君子以多识前言往行，以畜其德。", "大吉"], "7-4": ["山雷颐", "颐：贞吉。观颐，自求口实。", "山下有雷，颐；君子以慎言语，节饮食。", "中吉"], "2-5": ["泽风大过", "大过：栋挠，利有攸往，亨。", "泽灭木，大过；君子以独立不惧，遁世无闷。", "小凶"], "6-6": ["坎为水", "习坎：有孚，维心亨，行有尚。", "水洊至，习坎；君子以常德行，习教事。", "凶"], "3-3": ["离为火", "离：利贞，亨。畜牝牛，吉。", "明两作，离；大人以继明照于四方。", "吉"], "2-7": ["泽山咸", "咸：亨，利贞，取女吉。", "山上有泽，咸；君子以虚受人。", "大吉"], "4-5": ["雷风恒", "恒：亨，无咎，利贞，利有攸往。", "雷风，恒；君子以立不易方。", "吉"], "1-7": ["天山遁", "遁：亨，小利贞。", "天下有山，遁；君子以远小人，不恶而严。", "中平"], "4-1": ["雷天大壮", "大壮：利贞。", "雷在天上，大壮；君子以非礼弗履。", "吉"], "3-8": ["火地晋", "晋：康侯用锡马蕃庶，昼日三接。", "明出地上，晋；君子以自昭明德。", "大吉"], "8-3": ["地火明夷", "明夷：利艰贞。", "明入地中，明夷；君子以莅众，用晦而明。", "小凶"], "5-3": ["风火家人", "家人：利女贞。", "风自火出，家人；君子以言有物，而行有恒。", "吉"], "3-2": ["火泽睽", "睽：小事吉。", "上火下泽，睽；君子以同而异。", "小凶"], "6-7": ["水山蹇", "蹇：利西南，不利东北；利见大人，贞吉。", "山上有水，蹇；君子以反身修德。", "小凶"], "4-6": ["雷水解", "解：利西南，无所往，其来复吉。有攸往，夙吉。", "雷雨作，解；君子以赦过宥罪。", "大吉"], "7-2": ["山泽损", "损：有孚，元吉，无咎，可贞，利有攸往。", "山下有泽，损；君子以惩忿窒欲。", "中平"], "5-4": ["风雷益", "益：利有攸往，利涉大川。", "风雷，益；君子以见善则迁，有过则改。", "大吉"], "2-1": ["泽天夬", "夬：扬于王庭，孚号，有厉，告自邑，不利即戎，利有攸往。", "泽上于天，夬；君子以施禄及下，居德则忌。", "中平"], "1-5": ["天风姤", "姤：女壮，勿用取女。", "天下有风，姤；后以施命诰四方。", "小凶"], "2-8": ["泽地萃", "萃：亨。王假有庙，利见大人，亨，利贞。", "泽上于地，萃；君子以除戎器，戒不虞。", "大吉"], "8-5": ["地风升", "升：元亨，用见大人，勿恤，南征吉。", "地中生木，升；君子以顺德，积小以高大。", "大吉"], "2-6": ["泽水困", "困：亨，贞，大人吉，无咎，有言不信。", "泽无水，困；君子以致命遂志。", "凶"], "6-5": ["水风井", "井：改邑不改井，无丧无得，往来井井。", "木上有水，井；君子以劳民劝相。", "中吉"], "2-3": ["泽火革", "革：巳日乃孚，元亨利贞，悔亡。", "泽中有火，革；君子以治历明时。", "吉"], "3-5": ["火风鼎", "鼎：元吉，亨。", "木上有火，鼎；君子以正位凝命。", "大吉"], "4-4": ["震为雷", "震：亨。震来虩虩，笑言哑哑。震惊百里，不丧匕鬯。", "洊雷，震；君子以恐惧修省。", "中平"], "7-7": ["艮为山", "艮：艮其背，不获其身，行其庭，不见其人，无咎。", "兼山，艮；君子以思不出其位。", "中平"], "5-7": ["风山渐", "渐：女归吉，利贞。", "山上有木，渐；君子以居贤德善俗。", "吉"], "4-2": ["雷泽归妹", "归妹：征凶，无攸利。", "泽上有雷，归妹；君子以永终知敝。", "小凶"], "4-3": ["雷火丰", "丰：亨，王假之，勿忧，宜日中。", "雷电皆至，丰；君子以折狱致刑。", "大吉"], "3-7": ["火山旅", "旅：小亨，旅贞吉。", "山上有火，旅；君子以明慎用刑，而不留狱。", "中平"], "5-5": ["巽为风", "巽：小亨，利有攸往，利见大人。", "随风，巽；君子以申命行事。", "中吉"], "2-2": ["兑为泽", "兑：亨，利贞。", "丽泽，兑；君子以朋友讲习。", "吉"], "5-6": ["风水涣", "涣：亨。王假有庙，利涉大川，利贞。", "风行水上，涣；先王以享于帝立庙。", "中平"], "6-2": ["水泽节", "节：亨。苦节不可贞。", "泽上有水，节；君子以制数度，议德行。", "中吉"], "5-2": ["风泽中孚", "中孚：豚鱼吉，利涉大川，利贞。", "泽上有风，中孚；君子以议狱缓死。", "大吉"], "4-7": ["雷山小过", "小过：亨，利贞，可小事，不可大事。", "山上有雷，小过；君子以行过乎恭，丧过乎哀，用过乎俭。", "中平"], "6-3": ["水火既济", "既济：亨，小利贞，初吉终乱。", "水在火上，既济；君子以思患而预防之。", "吉"], "3-6": ["火水未济", "未济：亨，小狐汔济，濡其尾，无攸利。", "火在水上，未济；君子以慎辨物居方。", "中平"]};
+    const HEXAGRAMS = {"1-1": ["乾为天", "乾：元，亨，利，贞。", "天行健，君子以自强不息。", "大吉", "纯阳刚健，势头极盛，如日中天。", "大展宏图，宜主动担当，忌骄傲自满。", "正财偏财皆旺，适合大格局布局。", "主动热情，但须防过于强势。"], "8-8": ["坤为地", "坤：元，亨，利牝马之贞。", "地势坤，君子以厚德载物。", "大吉", "柔顺包容，以退为进，顺势借力最利。", "宜配合团队或贵人，忌独断专行。", "稳健积蓄，不动产或长线收益佳。", "温柔体贴，细水长流，宜包容。"], "6-4": ["水雷屯", "屯：元，亨，利，贞。勿用有攸往，利建侯。", "云雷，屯；君子以经纶。", "中平", "万事开头难，萌芽破土期阻力较大。", "初创或转型期宜打基础，寻觅帮手。", "初期投入多回报慢，切忌急躁投机。", "缘分初萌多波折，需要耐心培养。"], "7-6": ["山水蒙", "蒙：亨。匪我求童蒙，童蒙求我。", "山下出泉，蒙；君子以果行育德。", "中平", "迷雾未散，信息不明，宜虚心求教。", "缺乏经验时多向前辈请教，忌盲目拍板。", "理财切忌跟风，先看清规则再出手。", "彼此尚不了解，宜多沟通少猜忌。"], "6-1": ["水天需", "需：有孚，光亨，贞吉。利涉大川。", "云上于天，需；君子以饮食宴乐。", "中吉", "时机未到，静待花开，养精蓄锐必有成。", "项目推进需等待批复或风口，切勿强推。", "资金宜暂守，等待更好的入场点。", "感情急不得，顺其自然水到渠成。"], "1-6": ["天水讼", "讼：有孚，窒惕，中吉，终凶。", "天与水违行，讼；君子以作事谋始。", "小凶", "意见相左，易生口舌是非或合同纠纷。", "合作务必白纸黑字，遇事以和解为上。", "防财务纠纷与违约风险，忌贪小利。", "易因琐事冷战争执，退一步则安。"], "8-6": ["地水师", "师：贞，丈人吉，无咎。", "地中有水，师；君子以容民畜众。", "中吉", "团队作战，纪律严明，得资深领导可胜。", "适合带队攻坚或依托大平台，忌散漫。", "统筹规划资金，稳扎稳打可得回报。", "感情需有责任感与边界感，忌暧昧。"], "6-8": ["水地比", "比：吉。原筮元永贞，无咎。", "地上有水，比；先王以建万国，亲诸侯。", "大吉", "亲仁善邻，上下同心，合作共赢之象。", "贵人运强，适合拓展人脉与结盟合作。", "合伙求财顺遂，资源共享收益增。", "情投意合，双向奔赴，利谈婚论嫁。"], "5-1": ["风天小畜", "小畜：亨。密云不雨，自我西郊。", "风行天上，小畜；君子以懿文德。", "中平", "密云不雨，力量尚在蓄积，小有所成。", "大事暂难一步到位，宜先做小步试错。", "小额进账稳定，大额投资宜暂缓。", "互动温馨但进展较慢，切忌催逼。"], "1-2": ["天泽履", "履：履虎尾，不咥人，亨。", "上天下泽，履；君子以辨上下，定民志。", "中吉", "如履薄冰，虽近险境，守礼谨慎则化险为夷。", "职场注意上下级分寸，合规操作保平安。", "高风险领域须控仓位，见好就收。", "相处宜尊重对方底线，忌口无遮拦。"], "8-1": ["地天泰", "泰：小往大来，吉，亨。", "天地交，泰；后以财成天地之道。", "大吉", "天地交泰，万事亨通，付出少而收获大。", "顺风顺水，升职、签约、拓展皆大吉。", "财源广进，资金周转顺畅。", "琴瑟和鸣，感情甜蜜稳固。"], "1-8": ["天地否", "否：否之匪人，不利君子贞，大往小来。", "天地不交，否；君子以俭德辟难。", "凶", "上下闭塞，沟通受阻，宜韬光养晦守拙。", "暂避锋芒，忌此时贸然跳槽或大举扩张。", "严控开支，谨防套牢与无效消耗。", "沟通不畅易生隔阂，宜冷静独处反思。"], "1-3": ["天火同人", "同人：同人于野，亨。利涉大川。", "天与火，同人；君子以类族辨物。", "大吉", "志同道合，广结善缘，众人拾柴火焰高。", "适合跨界合作、公开推广与团队共创。", "人脉生财，信息互通带来好商机。", "三观契合，彼此坦诚，感情融洽。"], "3-1": ["火天大有", "大有：元亨。", "火在天上，大有；君子以遏恶扬善。", "大吉", "日中丽天，丰收大成，名利双收之盛象。", "业绩突出，声望上升，盛极须防骄纵。", "财运极佳，收益丰厚，宜做好资产配置。", "魅力四射，感情美满，注意专一。"], "8-7": ["地山谦", "谦：亨，君子有终。", "地中有山，谦；君子以裒多益寡。", "大吉", "谦受益，满招损，低调务实必有善终。", "不争功、多让利，反而赢得长期信任。", "稳健生财，不露富可避小人觊觎。", "相互体谅，谦和相处，白头偕老。"], "4-8": ["雷地豫", "豫：利建侯行师。", "雷出地奋，豫；先王以作乐崇德。", "大吉", "春雷震动，顺时而动，身心愉悦之象。", "适合启动新计划、发布会或市场造势。", "财运活跃，但须防享乐过度导致透支。", "氛围轻松浪漫，利约会与增进感情。"], "2-4": ["泽雷随", "随：元亨利贞，无咎。", "泽中有雷，随；君子以向晦入宴息。", "吉", "审时度势，灵活变通，顺应潮流则无咎。", "别死磕旧方法，跟随趋势调整策略。", "顺势而为易获利，忌逆势抄底。", "多听对方想法，随和包容感情更顺。"], "7-5": ["山风蛊", "蛊：元亨，利涉大川。", "山下有风，蛊；君子以振民育德。", "中平", "积弊已久，须大刀阔斧整顿方可重获生机。", "适合清理历史遗留问题、重构流程。", "整理旧账与不良资产，止损即盈利。", "正视陈年矛盾，彻底说开才能重修旧好。"], "8-2": ["地泽临", "临：元，亨，利，贞。至于八月有凶。", "泽上有地，临；君子以教思无穷。", "大吉", "阳气渐长，上升窗口期开启，宜乘势而上。", "把握当下红利期，同时提前为后期做预案。", "收入看涨，适合阶段性获利了结。", "感情升温迅速，宜珍惜当下甜蜜。"], "5-8": ["风地观", "观：盥而不荐，有孚颙若。", "风行地上，观；先王以省方，观民设教。", "中平", "冷静旁观，洞察全局，谋定而后动。", "多调研、少表态，看清对手底牌再出招。", "持币观望为宜，不熟不投。", "宜客观了解对方人品，忌恋爱脑。"], "3-4": ["火雷噬嗑", "噬嗑：亨。利用狱。", "雷电，噬嗑；先王以明罚敕法。", "中吉", "口中有物须咬断，果断清除障碍方能亨通。", "立规矩、清害群之马，切忌优柔寡断。", "追讨欠款或维权可成，明算账保利益。", "有误会或第三者干扰需果断处理。"], "7-3": ["山火贲", "贲：亨。小利有攸往。", "山下有火，贲；君子以明庶政，无敢折狱。", "中吉", "注重包装、审美与门面，但防华而不实。", "利设计、品牌营销与展示，忌空有其表。", "小利可得，大额决策需看实质而非噱头。", "注重仪式感能加分，但长久仍靠真心。"], "7-8": ["山地剥", "剥：不利有攸往。", "山附于地，剥；上以厚下安宅。", "凶", "根基受侵蚀，大势下行，宜退守保本。", "收缩战线，保住核心业务，切忌盲目扩张。", "严防破财与骗局，现金为王。", "感情出现裂痕，强求无益，先稳住自身。"], "8-4": ["地雷复", "复：亨。出入无疾，朋来无咎。", "雷在地中，复；先王以至日闭关。", "吉", "一阳来复，否极泰来，低谷转折生机再现。", "历经蛰伏迎来转机，宜循序渐进重启。", "触底反弹之象，可小步布局。", "破镜重圆或走出阴霾，迎来新开始。"], "1-4": ["天雷无妄", "无妄：元，亨，利，贞。", "天下雷行，物与无妄。", "中平", "顺乎天理自然，脚踏实地，切忌妄念投机。", "本分做事则顺，投机取巧必生意外。", "正财稳当，偏财投机易遭无妄之灾。", "真心相待可安，忌心怀二意。"], "7-1": ["山天大畜", "大畜：利贞，不家食吉，利涉大川。", "天在山中，大畜；君子以多识前言往行。", "大吉", "厚积薄发，能量充沛，适合走出舒适圈干大事。", "实力已备，适合跨区发展或挑战大项目。", "长期积累迎来丰厚回报，利大额规划。", "感情基础深厚，可考虑更进一步。"], "7-4": ["山雷颐", "颐：贞吉。观颐，自求口实。", "山下有雷，颐；君子以慎言语，节饮食。", "中吉", "慎言语、节饮食，自力更生，养精蓄锐。", "管住嘴少议论是非，专注提升核心技能。", "量入为出，靠自身手艺谋生最稳。", "注意沟通语气，多关心彼此生活起居。"], "2-5": ["泽风大过", "大过：栋挠，利有攸往，亨。", "泽灭木，大过；君子以独立不惧。", "小凶", "负荷过重，栋梁承压，须果断减负求变。", "事务超出承载力，需砍掉冗余或寻求变革。", "警惕高杠杆与资金链紧张，及时降压。", "关系压力过大，需要双方坦诚减压。"], "6-6": ["坎为水", "习坎：有孚，维心亨，行有尚。", "水洊至，习坎；君子以常德行。", "凶", "重重险阻，如履深渊，唯有诚信坚守方能脱险。", "逆境考验期，保持定力与专业，切忌自乱阵脚。", "防资金周转危机，宁守勿贪。", "感情易陷焦虑猜忌，坦诚定心是关键。"], "3-3": ["离为火", "离：利贞，亨。畜牝牛，吉。", "明两作，离；大人以继明照于四方。", "吉", "光明附丽，才华显露，宜依托正道与明主。", "利文创、传媒、展示，宜依附优质平台。", "明面收益佳，但忌虚火冒进。", "热情似火，注意控制脾气避免灼伤对方。"], "2-7": ["泽山咸", "咸：亨，利贞，取女吉。", "山上有泽，咸；君子以虚受人。", "大吉", "心有灵犀，无声感应，合作与姻缘皆大吉。", "上下默契度高，商务谈判极易达成共识。", "合作生财，人缘带来好机会。", "天作之合，双向心动，感情极佳。"], "4-5": ["雷风恒", "恒：亨，无咎，利贞。", "雷风，恒；君子以立不易方。", "吉", "持之以恒，守正不移，久久为功必成大器。", "深耕赛道不轻言放弃，时间会给复利。", "长期定投或稳定主业收益最佳。", "细水长流，感情长久稳定。"], "1-7": ["天山遁", "遁：亨，小利贞。", "天下有山，遁；君子以远小人，不恶而严。", "中平", "审时度势，急流勇退，保全实力以待来日。", "远离是非圈与内耗项目，主动退场是智慧。", "见好就收，落袋为安，防高位接盘。", "适当拉开距离冷静，反能看清真心。"], "4-1": ["雷天大壮", "大壮：利贞。", "雷在天上，大壮；君子以非礼弗履。", "吉", "声势正旺，阳刚十足，戒刚愎自用、冲动碰壁。", "势头强劲，但决策前须留余地、守底线。", "财势虽旺，防冲动消费或盲目加仓。", "热情主动，但切忌霸道控制。"], "3-8": ["火地晋", "晋：康侯用锡马蕃庶，昼日三接。", "明出地上，晋；君子以自昭明德。", "大吉", "旭日东升，步步高升，受上级赏识重用。", "升职加薪、晋级拓展的大好时机。", "正财大涨，多劳多得且有额外嘉奖。", "感情明朗，迅速向好发展。"], "8-3": ["地火明夷", "明夷：利艰贞。", "明入地中，明夷；君子以莅众，用晦而明。", "小凶", "明珠暗投，才华受抑，宜韬光养晦以待天明。", "环境不利时隐藏锋芒，切忌与小人硬碰硬。", "防暗中亏损，低调理财保平安。", "委屈难言，宜自我疗愈，不必强求理解。"], "5-3": ["风火家人", "家人：利女贞。", "风自火出，家人；君子以言有物，而行有恒。", "吉", "家和万事兴，先治内而后安外，各司其职。", "先理顺内部团队与流程，再向外扩张。", "家庭理财稳健，守财能力强。", "温馨和睦，极利婚姻与家庭建设。"], "3-2": ["火泽睽", "睽：小事吉。", "上火下泽，睽；君子以同而异。", "小凶", "志向分歧，背道而驰，求同存异可成小事。", "合作易生分歧，宜明确分工各自负责。", "合伙求财易生嫌隙，独立操作更佳。", "易生误会，多换位思考少翻旧账。"], "6-7": ["水山蹇", "蹇：利西南，不利东北；利见大人。", "山上有水，蹇；君子以反身修德。", "小凶", "前路险阻，寸步难行，宜绕道或求助贵人。", "遇瓶颈不可硬闯，换思路或请教高人破局。", "资金周转偏紧，宜保守防御。", "感情遇现实阻力，需共同耐心面对。"], "4-6": ["雷水解", "解：利西南，无所往，其来复吉。", "雷雨作，解；君子以赦过宥罪。", "大吉", "春雷降雨，冰雪消融，危机与误会彻底解除。", "卡顿项目迎来突破，速战速决抓紧收尾。", "困局解套，回款与收益加快。", "误会冰释，宽容对方则重归于好。"], "7-2": ["山泽损", "损：有孚，元吉，无咎。", "山下有泽，损；君子以惩忿窒欲。", "中平", "先损后益，舍小利而得大局，克制欲望则吉。", "主动精简非核心业务，聚焦高价值产出。", "短期有支出，但属于必要投资，长远有益。", "适当让步付出，能换来更深信任。"], "5-4": ["风雷益", "益：利有攸往，利涉大川。", "风雷，益；君子以见善则迁，有过则改。", "大吉", "损上益下，顺风顺水，助人亦是助己。", "大吉之象，利创业、合作、推进重大计划。", "财运亨通，利他思维带来丰厚回报。", "互相滋养成就，感情持续升温。"], "2-1": ["泽天夬", "夬：扬于王庭，孚号，有厉。", "泽上于天，夬；君子以施禄及下。", "中平", "果断决断，清除隐患，但须防暗箭反扑。", "该断则断，公开透明处理问题，忌用蛮力。", "清理不良投资，切忌恋战。", "感情宜干脆利落，忌拖泥带水。"], "1-5": ["天风姤", "姤：女壮，勿用取女。", "天下有风，姤；后以施命诰四方。", "小凶", "不期而遇或突发变数，宜防微杜渐。", "警惕突如其来的诱惑或合作陷阱。", "防意外破财，陌生高收益项目一律远离。", "易有烂桃花或短暂邂逅，宜保持清醒。"], "2-8": ["泽地萃", "萃：亨。王假有庙，利见大人。", "泽上于地，萃；君子以除戎器，戒不虞。", "大吉", "人才与资源汇聚，人脉鼎盛，利大展拳脚。", "利社群运营、团队扩张与行业聚会。", "财聚人气，注意提前做好风控预案。", "社交活跃，单身者易在聚会中遇良缘。"], "8-5": ["地风升", "升：元亨，用见大人，勿恤，南征吉。", "地中生木，升；君子以顺德，积小以高大。", "大吉", "如木破土，积小成大，稳步攀升无往不利。", "事业节节高升，利考学、晋升与长远布局。", "财富稳步复利增长，宜长期坚持。", "感情渐入佳境，信任日深。"], "2-6": ["泽水困", "困：亨，贞，大人吉，无咎。", "泽无水，困；君子以致命遂志。", "凶", "身处困境，言轻难信，唯守志不屈终能破局。", "低谷期少说多做，靠实力而非辩解证明自己。", "资金吃紧，严控风险等待转机。", "感情易感孤立无援，先稳住内心。"], "6-5": ["水风井", "井：改邑不改井，无丧无得。", "木上有水，井；君子以劳民劝相。", "中吉", "深耕本业，细水长流，持续输出价值自有人来。", "守住专业护城河，不断迭代产品与服务。", "稳定现金流，靠口碑带来持续收益。", "平淡见真情，贵在细心维护。"], "2-3": ["泽火革", "革：巳日乃孚，元亨利贞，悔亡。", "泽中有火，革；君子以治历明时。", "吉", "水火相激，大破大立，顺应时机彻底变革。", "适合转型、换赛道或推出颠覆性升级。", "打破旧有盈利模式，新方向带来新财路。", "改变相处模式，破除僵局迎来新生。"], "3-5": ["火风鼎", "鼎：元吉，亨。", "木上有火，鼎；君子以正位凝命。", "大吉", "革故鼎新，根基稳固，名利双收之大吉象。", "新事业站稳脚跟，利建立权威与品牌。", "财禄丰厚，稳健且具长期价值。", "关系稳如泰山，宜共筑未来。"], "4-4": ["震为雷", "震：亨。震来虩虩，笑言哑哑。", "洊雷，震；君子以恐惧修省。", "中平", "突发震动，虚惊一场，处变不惊反得福泽。", "遇突发变动切莫慌乱，稳住节奏即有转机。", "市场剧烈波动时保持冷静，忌恐慌割肉。", "偶有情绪爆发，冷静后反能加深理解。"], "7-7": ["艮为山", "艮：艮其背，不获其身。", "兼山，艮；君子以思不出其位。", "中平", "适可而止，知止不殆，停下反思胜过盲动。", "不宜盲目跨界，守好本职、复盘沉淀。", "暂停高频操作，守住现有成果。", "给彼此留出空间，不强求、不内耗。"], "5-7": ["风山渐", "渐：女归吉，利贞。", "山上有木，渐；君子以居贤德善俗。", "吉", "循序渐进，按部就班，切忌拔苗助长。", "稳扎稳打推进里程碑，急于求成反坏事。", "稳健理财，积少成多。", "感情一步步水到渠成，极利正缘。"], "4-2": ["雷泽归妹", "归妹：征凶，无攸利。", "泽上有雷，归妹；君子以永终知敝。", "小凶", "名不正言不顺，易因冲动或私欲招致后患。", "警惕不合规合作与短期利益诱惑。", "防冲动投资导致被动套牢。", "防一时激情冲动，需考虑长远责任。"], "4-3": ["雷火丰", "丰：亨，王假之，勿忧，宜日中。", "雷电皆至，丰；君子以折狱致刑。", "大吉", "丰盛至极，如日中天，宜趁势落袋为安。", "把握巅峰期果断出击，同时防盛极而衰。", "收益丰厚，宜及时止盈并留存备用金。", "感情热烈丰满，注意保持新鲜感与理性。"], "3-7": ["火山旅", "旅：小亨，旅贞吉。", "山上有火，旅；君子以明慎用刑。", "中平", "客居漂泊，身处异乡，低调柔和可保平安。", "利出差、外派或跨境业务，忌锋芒太露。", "小利可得，防旅途或异地消费超支。", "聚少离多或状态未定，宜多包容联系。"], "5-5": ["巽为风", "巽：小亨，利有攸往，利见大人。", "随风，巽；君子以申命行事。", "中吉", "顺风而行，以柔克刚，反复沟通渗透可成。", "利销售、传播与谈判，切忌犹豫不决。", "灵活变通生财，适合轻资产运作。", "温柔体贴能打动对方，忌优柔寡断。"], "2-2": ["兑为泽", "兑：亨，利贞。", "丽泽，兑；君子以朋友讲习。", "吉", "和悦待人，口才生辉，但须防口舌是非。", "利演讲、客服、社交与合作，谨言慎行。", "靠好人缘与沟通变现，忌轻信口头承诺。", "相处愉悦开心，注意别因玩笑伤和气。"], "5-6": ["风水涣", "涣：亨。王假有庙，利涉大川。", "风行水上，涣；先王以享于帝立庙。", "中平", "风吹水散，僵局化解，同时也防人心涣散。", "适合打破僵局、跨出新路，注意凝聚团队。", "资金分散，宜重新归集整合。", "冰释前嫌，或需重新确立共同目标。"], "6-2": ["水泽节", "节：亨。苦节不可贞。", "泽上有水，节；君子以制数度，议德行。", "中吉", "懂得节制，量力而行，过犹不及。", "制定合理节奏与预算，避免过度透支。", "开源节流，财务健康稳健。", "爱得有分寸，不过度索取也不委屈自己。"], "5-2": ["风泽中孚", "中孚：豚鱼吉，利涉大川，利贞。", "泽上有风，中孚；君子以议狱缓死。", "大吉", "诚信感人，精诚所至，金石为开。", "以诚立信，极易赢得大客户与长期伙伴。", "诚信生财，口碑效应显著。", "真心换真心，彼此高度信任。"], "4-7": ["雷山小过", "小过：亨，利贞，可小事，不可大事。", "山上有雷，小过；君子以行过乎恭。", "中平", "小有过越，宜做精细微调，不宜大动干戈。", "适合优化细节、控成本，暂缓重大冒险。", "小额稳赚，切忌重仓豪赌。", "多些谦让与体贴，小矛盾很快消散。"], "6-3": ["水火既济", "既济：亨，小利贞，初吉终乱。", "水在火上，既济；君子以思患而预防之。", "吉", "大功初成，圆满在望，居安思危防松懈。", "项目收官大吉，务必做好售后与复盘防反弹。", "已有所获，宜守成防后期疏漏。", "关系圆满，切忌因熟悉而忽略经营。"], "3-6": ["火水未济", "未济：亨，小狐汔济，濡其尾。", "火在水上，未济；君子以慎辨物居方。", "中平", "事未竟功，临门一脚最须谨慎，慎终如始。", "曙光在前但尚未落袋，最后一步切莫大意。", "回款或收益尚需时日，耐心把关细节。", "感情仍在磨合期，保持耐心与理性。"]};
+    const BAGUA_LAIXIANG = {"1": {"dir": "西北", "person": "长辈、领导、父亲、权威人士", "body": "头、骨、肺", "color": "白、金", "season": "秋冬之交", "num": "1 / 4 / 9"}, "2": {"dir": "正西", "person": "少女、口才者、客服、朋友", "body": "口、舌、咽喉", "color": "白、银", "season": "秋", "num": "2 / 4 / 9"}, "3": {"dir": "正南", "person": "中女、文人、创意/科技从业者", "body": "目、心、血液", "color": "红、紫", "season": "夏", "num": "3 / 2 / 7"}, "4": {"dir": "正东", "person": "长男、开拓者、急躁行动派", "body": "足、肝、神经", "color": "青、碧", "season": "春", "num": "4 / 3 / 8"}, "5": {"dir": "东南", "person": "长女、商旅、传播/销售人员", "body": "股、胆、呼吸", "color": "绿、青", "season": "春夏之交", "num": "5 / 3 / 8"}, "6": {"dir": "正北", "person": "中男、智谋者、流动/水产行业", "body": "耳、肾、泌尿", "color": "黑、蓝", "season": "冬", "num": "6 / 1 / 6"}, "7": {"dir": "东北", "person": "少男、稳重者、地产/仓储人士", "body": "手、背、脾胃", "color": "黄、棕", "season": "冬春之交", "num": "7 / 5 / 10"}, "8": {"dir": "西南", "person": "母亲、大众、后勤/务实派", "body": "腹、脾、肌肉", "color": "黄、褐", "season": "夏秋之交", "num": "8 / 5 / 10"}};
+    const YAO_POS = ["初爻动：事在萌芽起步阶段，宜打牢根基、谨慎试探，切忌操之过急。", "二爻动：居中得正之位，代表内部根基与核心实力，稳扎稳打易得贵人赏识。", "三爻动：处于内外卦交界转折点，变数与阻力较多，须防急躁失误。", "四爻动：近君多惧之位，适合审时度势、辅助配合，以柔克刚为上。", "五爻动：尊位中正，代表事情的核心主导权与高光时刻，把握机遇必有大成。", "上爻动：物极必反、事至终局之位，宜见好就收、落袋为安，防盛极而衰。"];
+    const DAY_MASTERS = {"甲": ["甲木（参天大树）", "正直仁厚、有担当与上进心，宁折不弯。", "适合管理、教育、架构规划、自主创业等需要引领力的领域。", "正财稳健，忌因面子或义气盲目担保。"], "乙": ["乙木（花草藤萝）", "柔韧灵活、善于变通、亲和力强且有艺术审美。", "适合策划、设计、咨询、公关、细分赛道深耕。", "善于借力生财，合作与人脉变现能力强。"], "丙": ["丙火（太阳之火）", "热情慷慨、光明磊落、行动力强，自带感染力。", "适合营销、传媒、演说、新兴科技与对外拓展。", "财来财去较快，宜做好强制储蓄与风控。"], "丁": ["丁火（灯烛星火）", "细腻敏锐、洞察力深、外柔内刚、重情重义。", "适合研究、心理、文化内容、精密技术与幕后操盘。", "靠专业深度与精准眼光获利，偏财悟性高。"], "戊": ["戊土（高山城墙）", "沉稳厚重、言出必行、包容力强、抗压性佳。", "适合金融、地产、基建、运营管理与长期主义项目。", "守财能力强，适合稳健型与不动产配置。"], "己": ["己土（田园沃土）", "温和务实、心思缜密、善于统筹细节与滋养他人。", "适合财务、人事、服务业、供应链与精细化运营。", "积小成大，细水长流型财富积累。"], "庚": ["庚金（剑戟顽铁）", "果断刚毅、执行力极强、讲义气、敢破敢立。", "适合工程、法务、交易、军警、变革型业务攻坚。", "大开大合，适合把握明确趋势果断出手。"], "辛": ["辛金（珠玉首饰）", "精致优雅、自尊心强、追求完美、嗅觉敏锐。", "适合高端消费、品牌、金融分析、法律与美学行业。", "注重品质与高客单价变现，忌陷入细节内耗。"], "壬": ["壬水（江河大海）", "豁达大度、足智多谋、格局开阔、适应力极强。", "适合跨境贸易、互联网、物流、投资与流动性强的行业。", "财路广、善周转，注意防止战线拉得太长。"], "癸": ["癸水（雨露清泉）", "温润内敛、极具同理心、思维灵动、润物细无声。", "适合文字、编程、玄学研究、顾问与幕后策略。", "灵感与信息差生财，忌过度思虑错失良机。"]};
+    const TIEBAN_DB = {"mingge": ["平生志气凌云汉，莫向人前叹未逢。", "玉在石中人未识，一朝琢就价连城。", "早年辛苦多波折，晚景安康乐有余。", "命中自有青云路，只待东风借力时。", "文章技艺皆超众，立业成家不负君。", "性情刚直少阿谀，历尽风霜见真章。", "心存仁厚多阴骘，遇险常逢暗里扶。", "少年立志游四海，中年基业渐丰隆。", "聪明伶俐机谋广，须防多思反自劳。", "松柏经冬方显翠，大器晚成福禄长。", "生来不作池中物，一遇风云便化龙。", "静守本心明进退，平生无咎亦无灾。"], "career": ["一箭双雕名利遂，中年运到福星临。", "财帛如潮来有信，须防轻诺失前功。", "南来北往多劳碌，自有清风送客舟。", "他乡作客终成主，异地谋生财禄丰。", "守业不如创业稳，自力更生福自来。", "官星透出名声显，权柄在握众人钦。", "偏财虽旺须知足，正道经营保长青。", "巧手奇谋能致富，一行专精胜百通。", "合伙须明分界线，独行反见利源开。", "贵人指引登高处，莫忘初心酬旧恩。", "先难后易终成局，稳步向前莫急功。", "财库丰盈宜积德，散财聚气福绵长。"], "family": ["家门和顺生祥瑞，子孝妻贤百事兴。", "琴瑟和鸣情意重，白头偕老乐天伦。", "六亲助力虽有限，白手兴家志气高。", "鸳鸯比翼同心结，莫为微言生小嫌。", "父母恩深宜早报，承欢膝下福源长。", "手足同心山可移，和气生财满堂春。", "晚婚反得良缘配，志同道合共此生。", "内助贤明能持家，外事无忧事业兴。", "子女聪明多孝顺，门庭日后更光辉。", "姻缘本是前生定，顺其自然遇知音。", "家和方能万事顺，多些体谅少争锋。", "门户清吉无杂事，安居乐业享清福。"], "luck": ["枯木逢春花再发，他乡遇友贵人扶。", "风波险处须防备，守正安然度岁华。", "莫道前程多阻隔，转弯之处见光明。", "云开雾散见青天，旧事消融新运来。", "今岁宜守不宜攻，积蓄力量待明年。", "东风送暖催新绿，把握良机莫迟疑。", "小人暗箭难伤正，清者自清无需辩。", "逢凶化吉皆因德，行事光明步步安。", "流年驿马星辰动，出行远谋见喜音。", "财星照命须勤勉，天道酬勤必有收。", "静极思动迎变局，顺势转型开新篇。", "岁运并临多考验，稳心定性即过关。"]};
+
     const WX_SHENG = { "木": "火", "火": "土", "土": "金", "金": "水", "水": "木" };
     const WX_KE    = { "木": "土", "土": "水", "水": "火", "火": "金", "金": "木" };
+    const WX_REMEDY = {
+      "金": "幸运色：白/银/金；有利方位：正西、西北；建议：多果断执行，佩戴金属饰品。",
+      "木": "幸运色：绿/青；有利方位：正东、东南；建议：多亲近自然绿植，注重成长规划。",
+      "水": "幸运色：黑/深蓝；有利方位：正北；建议：保持灵活变通，多饮水、亲近水景。",
+      "火": "幸运色：红/紫/暖橙；有利方位：正南；建议：多晒太阳、保持热情主动与社交。",
+      "土": "幸运色：黄/棕/米色；有利方位：东北、西南、本地；建议：稳扎稳打、注重信用与沉淀。"
+    };
     const ZHI_LIST = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
 
-    // 铁板神数经典条文库摘录
-    const TIEBAN_POOL = [
-      "平生志气凌云汉，莫向人前叹未逢。",
-      "枯木逢春花再发，他乡遇友贵人扶。",
-      "一箭双雕名利遂，中年运到福星临。",
-      "风波险处须防备，守正安然度岁华。",
-      "玉在石中人未识，一朝琢就价连城。",
-      "南来北往多劳碌，自有清风送客舟。",
-      "财帛如潮来有信，须防轻诺失前功。",
-      "家门和顺生祥瑞，子孝妻贤百事兴。",
-      "早年辛苦多波折，晚景安康乐有余。",
-      "命中自有青云路，只待东风借力时。",
-      "莫道前程多阻隔，转弯之处见光明。",
-      "文章技艺皆超众，立业成家不负君。"
-    ];
-
     let yjThrows = [];
-
-    let TIEBAN_12000 = null;
-
-    async function loadTieban12000() {
-      const st = document.getElementById("tbDbStatus");
-      try {
-        const res = await fetch("data/tieban_12000.json");
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        TIEBAN_12000 = await res.json();
-        const total = TIEBAN_12000.meta?.total || Object.keys(TIEBAN_12000.clauses || {}).length;
-        if (st) st.innerHTML = "✅ 已加载本地离线铁板条文库：<b>" + total.toLocaleString() + " 条</b>（子集～亥集，编号 1001～13000）";
-        logMsg("铁板神数 12,000 条离线条文库加载成功 ✅");
-      } catch (e) {
-        if (st) st.innerHTML = "⚠️ 当前为内置精简库模式（安装 APK 后自动启用全量 12,000 条）";
-        logMsg("未能读取 data/tieban_12000.json，使用内置 48 条库: " + e.message);
-      }
-    }
-
-    function getTiebanEntry(codeNum) {
-      const n = ((Math.abs(Math.floor(codeNum)) - 1001) % 12000 + 12000) % 12000 + 1001;
-      const key = String(n);
-      if (TIEBAN_12000 && TIEBAN_12000.clauses && TIEBAN_12000.clauses[key]) {
-        const [jiIdx, catIdx, txt] = TIEBAN_12000.clauses[key];
-        const ji = (TIEBAN_12000.meta?.ji || [])[jiIdx] || "";
-        const cat = (TIEBAN_12000.meta?.cats || [])[catIdx] || "";
-        return { code: key.padStart(5, "0"), ji, cat, text: txt };
-      }
-      const jiList = ["子集","丑集","寅集","卯集","辰集","巳集","午集","未集","申集","酉集","戌集","亥集"];
-      const ji = jiList[Math.floor((n - 1001) / 1000)];
-      const fallback = TIEBAN_DB.mingge[n % TIEBAN_DB.mingge.length];
-      return { code: key.padStart(5, "0"), ji, cat: "条文", text: fallback };
-    }
-
-    function lookupTiebanCode() {
-      const v = parseInt(document.getElementById("tbSearchCode").value, 10);
-      if (isNaN(v) || v < 1001 || v > 13000) return alert("请输入 1001 到 13000 之间的条文编号！");
-      const item = getTiebanEntry(v);
-      const box = document.getElementById("tbLookupOut");
-      box.style.display = "block";
-      box.innerHTML = '<div class="tieban-clause"><span class="tag">' + item.ji + ' · 条文 ' + item.code + '（' + item.cat + '）</span><div style="margin-top:5px;">' + item.text + '</div></div>';
-    }
-
-    function randomTiebanCode() {
-      const rnd = Math.floor(Math.random() * 12000) + 1001;
-      document.getElementById("tbSearchCode").value = rnd;
-      lookupTiebanCode();
-    }
-
     let lastContext = { yijing: "", meihua: "", tieban: "" };
 
     function logMsg(msg) {
@@ -367,7 +318,7 @@
       return '<div class="gua-box"><div class="gua-title">' + title + '</div><div class="gua-lines">' + rows + '</div><div class="gua-meta">' + extraHtml + '</div></div>';
     }
 
-    // ========== 1. 易经金钱卦 ==========
+    // ========== 1. 易经金钱卦（完整离线详批） ==========
     function tossOneYao() {
       if (yjThrows.length >= 6) yjThrows = [];
       const c = () => (Math.random() < 0.5 ? 2 : 3);
@@ -404,40 +355,56 @@
 
       const low1 = linesToGuaNum(baseLines.slice(0, 3));
       const up1  = linesToGuaNum(baseLines.slice(3, 6));
-      const hex1 = HEXAGRAMS[up1 + "-" + low1];
+      const h1   = HEXAGRAMS[up1 + "-" + low1];
 
       const low2 = linesToGuaNum(changedLines.slice(0, 3));
       const up2  = linesToGuaNum(changedLines.slice(3, 6));
-      const hex2 = HEXAGRAMS[up2 + "-" + low2];
+      const h2   = HEXAGRAMS[up2 + "-" + low2];
 
       let html = renderGuaCard(
-        "本卦：" + hex1[0], baseLines, movingIdx,
-        '<span class="tag">' + hex1[3] + '</span><br/>上' + BAGUA[up1].name + '(' + BAGUA[up1].wx + ') 下' + BAGUA[low1].name + '(' + BAGUA[low1].wx + ')'
+        "本卦：" + h1[0], baseLines, movingIdx,
+        '<span class="tag">' + h1[3] + '</span><br/>上' + BAGUA[up1].name + '(' + BAGUA[up1].wx + ') 下' + BAGUA[low1].name + '(' + BAGUA[low1].wx + ')'
       );
       if (movingIdx.length > 0) {
         html += renderGuaCard(
-          "变卦：" + hex2[0], changedLines, [],
-          '<span class="tag">' + hex2[3] + '</span><br/>动爻：第 ' + movingIdx.map(i => i + 1).join("、") + ' 爻'
+          "变卦：" + h2[0], changedLines, [],
+          '<span class="tag">' + h2[3] + '</span><br/>动爻：第 ' + movingIdx.map(i => i + 1).join("、") + ' 爻'
         );
       }
-
       document.getElementById("yjGuaGrid").innerHTML = html;
+
+      let movingHtml = "";
+      if (movingIdx.length === 0) {
+        movingHtml = "<b>【静卦无动爻】</b>局势稳定，直接以本卦卦辞与白话精解为主断。";
+      } else {
+        movingHtml = "<b>【动爻启示】</b>" + movingIdx.map(idx => YAO_POS[idx]).join("<br/>") +
+          "<br/><b>【变卦结局 · " + h2[0] + "（" + h2[3] + "）】</b>" + h2[4];
+      }
+
       document.getElementById("yjClassicText").innerHTML =
-        "<b>【本卦卦辞】" + hex1[0] + "：</b>" + hex1[1] + "<br/><b>【大象传】</b>" + hex1[2] +
-        (movingIdx.length ? "<br/><br/><b>【变卦卦辞】" + hex2[0] + "：</b>" + hex2[1] + "<br/><b>【变卦象曰】</b>" + hex2[2] : "<br/><br/><b>【静卦无动爻】</b>以本卦卦辞与象传为主断。");
+        "<h4>📖 离线典籍详批 · " + h1[0] + "</h4>" +
+        "<b>【卦辞原文】</b>" + h1[1] + "<br/>" +
+        "<b>【大象传】</b>" + h1[2] + "<br/>" +
+        "<b>【白话精解】</b>" + h1[4] +
+        "<div class='grid-2'>" +
+          "<div class='mini-box'><b>💼 事业/学业：</b>" + h1[5] + "</div>" +
+          "<div class='mini-box'><b>💰 财运/投资：</b>" + h1[6] + "</div>" +
+          "<div class='mini-box'><b>❤️ 感情/合作：</b>" + h1[7] + "</div>" +
+          "<div class='mini-box'><b>🧭 动静演变：</b>" + movingHtml + "</div>" +
+        "</div>";
+
       document.getElementById("yjResult").style.display = "block";
       document.getElementById("yjAiOut").style.display = "none";
 
       lastContext.yijing =
         "占问事项：" + (document.getElementById("yjQuestion").value || "近期综合运势") + "\n" +
-        "六爻数值(初至上)：" + yjThrows.join(",") + "\n" +
-        "本卦：" + hex1[0] + "（" + hex1[1] + " / " + hex1[2] + "）\n" +
+        "本卦：" + h1[0] + "（" + h1[1] + " / " + h1[4] + "）\n" +
         "动爻：" + (movingIdx.length ? movingIdx.map(i => "第" + (i + 1) + "爻").join("、") : "无动爻") + "\n" +
-        (movingIdx.length ? "变卦：" + hex2[0] + "（" + hex2[1] + "）" : "");
-      logMsg("易经起卦完成: " + hex1[0]);
+        (movingIdx.length ? "变卦：" + h2[0] + "（" + h2[4] + "）" : "");
+      logMsg("易经离线详批完成: " + h1[0]);
     }
 
-    // ========== 2. 梅花易数（接入 lunar-javascript 真农历地支起卦） ==========
+    // ========== 2. 梅花易数（离线类象 + 体用 + 应期） ==========
     function toggleMhInputs() {
       const isNum = document.getElementById("mhMode").value === "num";
       document.getElementById("mhNumBox1").style.display = isNum ? "block" : "none";
@@ -466,7 +433,7 @@
           up   = (yZhiIdx + lMonth + lDay) % 8 || 8;
           low  = (yZhiIdx + lMonth + lDay + hZhiIdx) % 8 || 8;
           dong = (yZhiIdx + lMonth + lDay + hZhiIdx) % 6 || 6;
-          timeMeta = "真农历：" + lunar.getYearInGanZhiExact() + "年 " + lunar.getMonthInChinese() + "月" + lunar.getDayInChinese() + " " + lunar.getTimeZhi() + "时（年支" + yZhiIdx + "+月" + lMonth + "+日" + lDay + "+时支" + hZhiIdx + "）";
+          timeMeta = "真农历：" + lunar.getYearInGanZhiExact() + "年 " + lunar.getMonthInChinese() + "月" + lunar.getDayInChinese() + " " + lunar.getTimeZhi() + "时";
         } else {
           const yIdx = ((now.getFullYear() - 4) % 12) + 1;
           const m = now.getMonth() + 1, d = now.getDate();
@@ -498,36 +465,45 @@
       const hexHu   = HEXAGRAMS[huUp + "-" + huLow];
       const hexBian = HEXAGRAMS[bianUp + "-" + bianLow];
 
-      const tiGua   = dong <= 3 ? BAGUA[up] : BAGUA[low];
-      const yongGua = dong <= 3 ? BAGUA[low] : BAGUA[up];
-      const bianYongGua = dong <= 3 ? BAGUA[bianLow] : BAGUA[bianUp];
+      const tiNum   = dong <= 3 ? up : low;
+      const yongNum = dong <= 3 ? low : up;
+      const bianYongNum = dong <= 3 ? bianLow : bianUp;
+
+      const tiGua   = BAGUA[tiNum];
+      const yongGua = BAGUA[yongNum];
+      const bianYongGua = BAGUA[bianYongNum];
+      const yongLX  = BAGUA_LAIXIANG[yongNum];
 
       const [benVerdict, benDesc] = judgeTiYong(tiGua.wx, yongGua.wx);
       const [bianVerdict, bianDesc] = judgeTiYong(tiGua.wx, bianYongGua.wx);
 
       document.getElementById("mhGuaGrid").innerHTML =
         renderGuaCard("本卦：" + hexBen[0], baseLines, [dong - 1], "动爻：第 " + dong + " 爻") +
-        renderGuaCard("互卦：" + hexHu[0], huLines, [], "过程与内因") +
-        renderGuaCard("变卦：" + hexBian[0], bianLines, [], "结局与归宿");
+        renderGuaCard("互卦：" + hexHu[0], huLines, [], "过程：" + hexHu[3]) +
+        renderGuaCard("变卦：" + hexBian[0], bianLines, [], "结局：" + hexBian[3]);
 
       document.getElementById("mhTiYong").innerHTML =
-        "<div style='color:#94a3b8;font-size:12px;margin-bottom:6px;'>" + timeMeta + "</div>" +
+        "<h4>🌸 梅花易数离线详批（" + timeMeta + "）</h4>" +
         "<b>体卦（自身）：</b>" + tiGua.name + "（属" + tiGua.wx + "） &nbsp;|&nbsp; <b>用卦（所问）：</b>" + yongGua.name + "（属" + yongGua.wx + "）<br/>" +
         "<b>当前态势：</b><span class='tag'>" + benVerdict + "</span> — " + benDesc + "<br/>" +
-        "<b>最终结局（变用" + bianYongGua.name + "属" + bianYongGua.wx + "）：</b><span class='tag'>" + bianVerdict + "</span> — " + bianDesc;
+        "<b>过程玄机（互卦 " + hexHu[0] + "）：</b>" + hexHu[4] + "<br/>" +
+        "<b>最终结局（变用" + bianYongGua.name + "属" + bianYongGua.wx + "）：</b><span class='tag'>" + bianVerdict + "</span> — " + bianDesc +
+        "<div class='grid-2'>" +
+          "<div class='mini-box'><b>🧭 用卦类象（" + yongGua.name + "卦）：</b><br/>方位：" + yongLX.dir + "｜人物：" + yongLX.person + "<br/>颜色：" + yongLX.color + "｜身体：" + yongLX.body + "</div>" +
+          "<div class='mini-box'><b>⏳ 离线应期参考：</b><br/>参考数字：" + (up + low) + " 或 " + yongLX.num + "（天/周/月）<br/>旺季参考：" + yongLX.season + "（五行属" + yongGua.wx + "旺时）</div>" +
+        "</div>";
 
       document.getElementById("mhResult").style.display = "block";
       document.getElementById("mhAiOut").style.display = "none";
 
       lastContext.meihua =
         "占问事项：" + (document.getElementById("mhQuestion").value || "当下局势推演") + "\n" +
-        timeMeta + "\n" +
-        "本卦：" + hexBen[0] + "，互卦：" + hexHu[0] + "，变卦：" + hexBian[0] + "，第" + dong + "爻动。\n" +
+        timeMeta + "\n本卦：" + hexBen[0] + "，互卦：" + hexHu[0] + "，变卦：" + hexBian[0] + "，第" + dong + "爻动。\n" +
         "体卦：" + tiGua.name + "(" + tiGua.wx + ")，本用卦：" + yongGua.name + "(" + yongGua.wx + ") [" + benVerdict + "]，变用卦：" + bianYongGua.name + "(" + bianYongGua.wx + ") [" + bianVerdict + "]。";
-      logMsg("梅花排盘完成: " + hexBen[0] + " -> " + hexBian[0]);
+      logMsg("梅花离线详批完成: " + hexBen[0] + " -> " + hexBian[0]);
     }
 
-    // ========== 3. 铁板神数（接入 lunar-javascript 权威节气八字 + 纳音 + 十神 + 命宫 + 大运） ==========
+    // ========== 3. 铁板神数 + 子平八字（离线日主详批 + 五行旺衰 + 四维条文） ==========
     function castTieban() {
       if (typeof Solar === "undefined") {
         return alert("历法库 lunar-javascript 尚未加载完成，请稍候 1 秒重试。");
@@ -547,10 +523,21 @@
       const ec = lunar.getEightChar();
 
       const yGZ = ec.getYear(), mGZ = ec.getMonth(), dGZ = ec.getDay(), hGZ = ec.getTime();
+      const dayGan = ec.getDayGan();
+      const dm = DAY_MASTERS[dayGan] || ["未知日主", "", "", ""];
       const yun = ec.getYun(genderCode);
       const dayunList = yun.getDaYun().slice(1, 6).map(dy => dy.getStartAge() + "岁:" + dy.getGanZhi()).join(" → ");
 
-      // 结合权威四柱地支序数 + 考刻计算皇极基数
+      // 统计八字五行分布
+      const wxAll = (ec.getYearWuXing() + ec.getMonthWuXing() + ec.getDayWuXing() + ec.getTimeWuXing()).split("");
+      const wxCount = { "金": 0, "木": 0, "水": 0, "火": 0, "土": 0 };
+      wxAll.forEach(w => { if (wxCount[w] !== undefined) wxCount[w]++; });
+      const wxSorted = Object.entries(wxCount).sort((a, b) => a[1] - b[1]);
+      const weakestWx = wxSorted[0][0];
+      const strongestWx = wxSorted[4][0];
+      const wxSummary = Object.entries(wxCount).map(([k, v]) => k + ":" + v).join("  |  ");
+
+      // 铁板四维条文推演
       const z1 = ZHI_LIST.indexOf(ec.getYearZhi()) + 1;
       const z2 = ZHI_LIST.indexOf(ec.getMonthZhi()) + 1;
       const z3 = ZHI_LIST.indexOf(ec.getDayZhi()) + 1;
@@ -558,14 +545,17 @@
       const baseNum = ((z1 * 1000 + z2 * 100 + z3 * 10 + z4 + ke * 131 + (genderCode ? 7 : 3)) % 11000) + 1001;
       const code1 = String(baseNum).padStart(5, "0");
       const code2 = String(((baseNum + 2468) % 12000) + 1001).padStart(5, "0");
-      const code3 = String(((baseNum + 5184) % 12000) + 1001).padStart(5, "0");
+      const code3 = String(((baseNum + 4123) % 12000) + 1001).padStart(5, "0");
+      const code4 = String(((baseNum + 6789) % 12000) + 1001).padStart(5, "0");
 
-      const c1 = TIEBAN_POOL[baseNum % TIEBAN_POOL.length];
-      const c2 = TIEBAN_POOL[(baseNum + 5) % TIEBAN_POOL.length];
-      const c3 = TIEBAN_POOL[(baseNum + 9) % TIEBAN_POOL.length];
+      const c1 = TIEBAN_DB.mingge[baseNum % TIEBAN_DB.mingge.length];
+      const c2 = TIEBAN_DB.career[(baseNum + z2) % TIEBAN_DB.career.length];
+      const c3 = TIEBAN_DB.family[(baseNum + z3) % TIEBAN_DB.family.length];
+      const c4 = TIEBAN_DB.luck[(baseNum + z4 + ke) % TIEBAN_DB.luck.length];
 
       document.getElementById("tbBaziInfo").innerHTML =
-        "<b>命造：</b>" + genderLabel + " &nbsp;|&nbsp; <b>农历：</b>" + lunar.toString() + " &nbsp;|&nbsp; <b>考刻：</b>第 " + ke + " 刻<br/>" +
+        "<h4>📜 权威节气八字与五行旺衰（离线详批）</h4>" +
+        "<b>命造：</b>" + genderLabel + " &nbsp;|&nbsp; <b>农历：</b>" + lunar.toString() + " &nbsp;|&nbsp; <b>考刻：</b>第 " + ke + " 刻" +
         "<table class='bazi-table'>" +
         "<tr><th>四柱</th><th>年柱</th><th>月柱</th><th>日柱（日主）</th><th>时柱</th></tr>" +
         "<tr><td>干支</td><td style='color:#f5d076;font-weight:700;'>" + yGZ + "</td><td style='color:#f5d076;font-weight:700;'>" + mGZ + "</td><td style='color:#38bdf8;font-weight:700;'>" + dGZ + "</td><td style='color:#f5d076;font-weight:700;'>" + hGZ + "</td></tr>" +
@@ -574,27 +564,32 @@
         "<tr><td>十神</td><td>" + ec.getYearShiShenGan() + "</td><td>" + ec.getMonthShiShenGan() + "</td><td>日主</td><td>" + ec.getTimeShiShenGan() + "</td></tr>" +
         "</table>" +
         "<b>胎元：</b>" + ec.getTaiYuan() + " &nbsp;|&nbsp; <b>命宫：</b>" + ec.getMingGong() + " &nbsp;|&nbsp; <b>身宫：</b>" + ec.getShenGong() + "<br/>" +
-        "<b>大运排盘：</b>" + dayunList;
+        "<b>大运排盘：</b>" + dayunList + "<br/>" +
+        "<b>五行统计：</b>" + wxSummary + "（最旺：<span class='tag'>" + strongestWx + "</span>，最缺/偏弱：<span class='tag'>" + weakestWx + "</span>）" +
+        "<div class='grid-2'>" +
+          "<div class='mini-box'><b>🌟 日主详批 · " + dm[0] + "</b><br/>性格：" + dm[1] + "<br/>事业：" + dm[2] + "<br/>财运：" + dm[3] + "</div>" +
+          "<div class='mini-box'><b>⚖️ 离线五行调候建议（补" + weakestWx + "）：</b><br/>" + WX_REMEDY[weakestWx] + "</div>" +
+        "</div>";
 
       document.getElementById("tbClauses").innerHTML =
         '<div class="tieban-clause"><span class="tag">命格总断 · 条文 ' + code1 + '</span><div style="margin-top:5px;">' + c1 + '</div></div>' +
         '<div class="tieban-clause"><span class="tag">事业财禄 · 条文 ' + code2 + '</span><div style="margin-top:5px;">' + c2 + '</div></div>' +
-        '<div class="tieban-clause"><span class="tag">流年转机 · 条文 ' + code3 + '</span><div style="margin-top:5px;">' + c3 + '</div></div>';
+        '<div class="tieban-clause"><span class="tag">六亲姻缘 · 条文 ' + code3 + '</span><div style="margin-top:5px;">' + c3 + '</div></div>' +
+        '<div class="tieban-clause"><span class="tag">流年转机 · 条文 ' + code4 + '</span><div style="margin-top:5px;">' + c4 + '</div></div>';
 
       document.getElementById("tbResult").style.display = "block";
       document.getElementById("tbAiOut").style.display = "none";
 
       lastContext.tieban =
         "命造：" + genderLabel + "，公历 " + dateStr + " " + timeStr + "，农历 " + lunar.toString() + "（第" + ke + "刻）\n" +
-        "权威节气四柱：" + yGZ + " " + mGZ + " " + dGZ + " " + hGZ + "\n" +
-        "纳音：" + ec.getYearNaYin() + " / " + ec.getMonthNaYin() + " / " + ec.getDayNaYin() + " / " + ec.getTimeNaYin() + "\n" +
-        "胎元：" + ec.getTaiYuan() + "，命宫：" + ec.getMingGong() + "，大运：" + dayunList + "\n" +
+        "四柱：" + yGZ + " " + mGZ + " " + dGZ + " " + hGZ + "（日主" + dm[0] + "）\n" +
+        "五行统计：" + wxSummary + "，大运：" + dayunList + "\n" +
         "考刻补充：" + (note || "无") + "\n" +
-        "条文：" + code1 + " " + c1 + " | " + code2 + " " + c2;
-      logMsg("铁板与权威八字排盘完成: " + yGZ + " " + mGZ + " " + dGZ + " " + hGZ);
+        "条文：" + c1 + " / " + c2 + " / " + c3 + " / " + c4;
+      logMsg("铁板八字离线详批完成: " + yGZ + " " + mGZ + " " + dGZ + " " + hGZ);
     }
 
-    // ========== 4. Gemini AI 多模型防 429 轮询解盘 ==========
+    // ========== 4. Gemini AI 多模型防 429 轮询解盘（可选联网） ==========
     const GEMINI_MODELS = [
       "gemini-3.5-flash-lite",
       "gemini-3.5-flash",
@@ -629,18 +624,18 @@
     async function runAiInterpret(kind) {
       const apiKey = (localStorage.getItem(STORAGE_KEY_API) || document.getElementById("aiApiKey").value || "").trim();
       if (!(apiKey.startsWith("AIza") || apiKey.startsWith("AQ."))) {
-        alert("请先点击顶部「⚙️ 设置/激活」填入你的 Gemini API Key（支持 AQ. 或 AIza 开头）！");
+        alert("当前已展示完整离线详批。如需 AI 定制解盘，请先在「⚙️ 设置/AI」中填入 Gemini API Key。");
         return;
       }
       const outMap = { yijing: "yjAiOut", meihua: "mhAiOut", tieban: "tbAiOut" };
       const outEl = document.getElementById(outMap[kind]);
       outEl.style.display = "block";
-      outEl.textContent = "⏳ 正在结合传统典籍与权威排盘为您推演断语...";
+      outEl.textContent = "⏳ 正在联网调用 AI 大师结合您的具体问题深度推演...";
 
       const roleMap = {
-        yijing: "你是一位精通《周易》六十四卦、象传与六爻断法的易学大师。请按【一、卦象总断】【二、事态演变】【三、趋吉避凶建议】三段输出精炼、直白、有洞察力的解卦报告。",
-        meihua: "你是一位精通邵康节《梅花易数》的大师。请紧扣本卦、互卦、变卦以及体用五行生克，按【一、体用吉凶】【二、过程玄机（互卦）】【三、结局与应期提示】输出清晰断语。",
-        tieban: "你是一位精通《铁板神数》与子平八字的命理大师。请结合四柱、五行纳音、十神、命宫大运与考刻条文，按【一、命格气象】【二、事业财运与六亲提示】【三、大运流年行动建议】输出专业客观的解盘。"
+        yijing: "你是一位精通《周易》六十四卦、象传与六爻断法的易学大师。请按【一、卦象总断】【二、事态演变】【三、趋吉避凶建议】输出精炼直白的解卦报告。",
+        meihua: "你是一位精通邵康节《梅花易数》的大师。请紧扣本卦、互卦、变卦与体用生克，按【一、体用吉凶】【二、过程玄机】【三、结局与应期提示】输出断语。",
+        tieban: "你是一位精通《铁板神数》与子平八字的命理大师。请结合四柱、五行旺衰、大运与考刻条文，按【一、命格气象】【二、事业财运与六亲】【三、流年行动建议】输出专业客观解盘。"
       };
 
       try {
@@ -670,7 +665,7 @@
 
     function refreshLicenseUI() {
       const lic = localStorage.getItem(STORAGE_KEY_LIC);
-      document.getElementById("licenseBadge").innerText = (lic && lic.startsWith("YI1.")) ? "专业买断版 · 已解锁" : "基础免费版";
+      document.getElementById("licenseBadge").innerText = (lic && lic.startsWith("YI1.")) ? "专业买断版 · 已解锁" : "离线完整版";
     }
 
     function renderAlmanac() {
@@ -695,8 +690,7 @@
       if (savedKey) document.getElementById("aiApiKey").value = savedKey;
       refreshLicenseUI();
       renderAlmanac();
-      loadTieban12000();
-      logMsg("易经玄数大师 v1.0.0 启动完成 (64卦典籍 + lunar-javascript)");
+      logMsg("易经玄数大师 v1.0.1 启动完成 (64卦全维详批 + 八卦类象 + 日主五行 + 48条铁板库)");
     })();
   </script>
 </body>
