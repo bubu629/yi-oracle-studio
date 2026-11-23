@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>易经玄数大师 v1.0.1 — 离线全功能命理典籍</title>
+  <title>易经玄数大师 v1.0.2 — 离线全功能命理典籍</title>
   <script src="vendor/lunar.min.js" onerror="var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.8/lunar.min.js';document.head.appendChild(s);"></script>
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -106,7 +106,7 @@
   <div class="container">
     <div class="topbar">
       <div>
-        <div class="brand">☯️ 易经玄数大师 v1.0.1</div>
+        <div class="brand">☯️ 易经玄数大师 v1.0.2</div>
         <div class="sub">100% 离线排盘与典籍详批 · 易经64卦 · 梅花类象 · 八字五行 · 铁板神数</div>
       </div>
       <div id="licenseBadge" class="badge">离线完整版</div>
@@ -178,7 +178,18 @@
     <!-- PANEL 3: 铁板神数 + 子平八字 -->
     <div id="panel-tieban" class="panel">
       <div class="card">
-        <h3>📜 铁板神数 · 精准节气八字 + 日主五行旺衰 + 四维条文</h3>
+        <h3>📜 铁板神数 · 12,000 条离线条文库 + 精准节气八字</h3>
+        <div id="tbDbStatus" style="font-size:12px;color:#38bdf8;margin-bottom:8px;">⏳ 正在加载 12,000 条铁板神数离线条文库（子集～亥集）...</div>
+        <div class="row" style="margin-bottom:10px;align-items:flex-end;">
+          <div style="flex:2;">
+            <label style="margin-top:0;">🔍 条文号直查（输入 1001 ～ 13000 任意编号）</label>
+            <input type="number" id="tbSearchCode" min="1001" max="13000" placeholder="例如：2580 或 8888" />
+          </div>
+          <button class="btn-slate" style="flex:0.8;" onclick="lookupTiebanCode()">查条文</button>
+          <button class="btn-slate" style="flex:0.8;" onclick="randomTiebanCode()">随机翻阅</button>
+        </div>
+        <div id="tbLookupOut" style="display:none;margin-bottom:10px;"></div>
+
         <div class="row">
           <div>
             <label>公历出生日期</label>
@@ -281,6 +292,54 @@
     const ZHI_LIST = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
 
     let yjThrows = [];
+
+    let TIEBAN_12000 = null;
+
+    async function loadTieban12000() {
+      const st = document.getElementById("tbDbStatus");
+      try {
+        const res = await fetch("data/tieban_12000.json");
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        TIEBAN_12000 = await res.json();
+        const total = TIEBAN_12000.meta?.total || Object.keys(TIEBAN_12000.clauses || {}).length;
+        if (st) st.innerHTML = "✅ 已加载本地离线铁板条文库：<b>" + total.toLocaleString() + " 条</b>（子集～亥集，编号 1001～13000）";
+        logMsg("铁板神数 12,000 条离线条文库加载成功 ✅");
+      } catch (e) {
+        if (st) st.innerHTML = "⚠️ 当前为内置精简库模式（安装 APK 后自动启用全量 12,000 条）";
+        logMsg("未能读取 data/tieban_12000.json，使用内置 48 条库: " + e.message);
+      }
+    }
+
+    function getTiebanEntry(codeNum) {
+      const n = ((Math.abs(Math.floor(codeNum)) - 1001) % 12000 + 12000) % 12000 + 1001;
+      const key = String(n);
+      if (TIEBAN_12000 && TIEBAN_12000.clauses && TIEBAN_12000.clauses[key]) {
+        const [jiIdx, catIdx, txt] = TIEBAN_12000.clauses[key];
+        const ji = (TIEBAN_12000.meta?.ji || [])[jiIdx] || "";
+        const cat = (TIEBAN_12000.meta?.cats || [])[catIdx] || "";
+        return { code: key.padStart(5, "0"), ji, cat, text: txt };
+      }
+      const jiList = ["子集","丑集","寅集","卯集","辰集","巳集","午集","未集","申集","酉集","戌集","亥集"];
+      const ji = jiList[Math.floor((n - 1001) / 1000)];
+      const fallback = TIEBAN_DB.mingge[n % TIEBAN_DB.mingge.length];
+      return { code: key.padStart(5, "0"), ji, cat: "条文", text: fallback };
+    }
+
+    function lookupTiebanCode() {
+      const v = parseInt(document.getElementById("tbSearchCode").value, 10);
+      if (isNaN(v) || v < 1001 || v > 13000) return alert("请输入 1001 到 13000 之间的条文编号！");
+      const item = getTiebanEntry(v);
+      const box = document.getElementById("tbLookupOut");
+      box.style.display = "block";
+      box.innerHTML = '<div class="tieban-clause"><span class="tag">' + item.ji + ' · 条文 ' + item.code + '（' + item.cat + '）</span><div style="margin-top:5px;">' + item.text + '</div></div>';
+    }
+
+    function randomTiebanCode() {
+      const rnd = Math.floor(Math.random() * 12000) + 1001;
+      document.getElementById("tbSearchCode").value = rnd;
+      lookupTiebanCode();
+    }
+
     let lastContext = { yijing: "", meihua: "", tieban: "" };
 
     function logMsg(msg) {
@@ -542,16 +601,16 @@
       const z2 = ZHI_LIST.indexOf(ec.getMonthZhi()) + 1;
       const z3 = ZHI_LIST.indexOf(ec.getDayZhi()) + 1;
       const z4 = ZHI_LIST.indexOf(ec.getTimeZhi()) + 1;
-      const baseNum = ((z1 * 1000 + z2 * 100 + z3 * 10 + z4 + ke * 131 + (genderCode ? 7 : 3)) % 11000) + 1001;
-      const code1 = String(baseNum).padStart(5, "0");
-      const code2 = String(((baseNum + 2468) % 12000) + 1001).padStart(5, "0");
-      const code3 = String(((baseNum + 4123) % 12000) + 1001).padStart(5, "0");
-      const code4 = String(((baseNum + 6789) % 12000) + 1001).padStart(5, "0");
-
-      const c1 = TIEBAN_DB.mingge[baseNum % TIEBAN_DB.mingge.length];
-      const c2 = TIEBAN_DB.career[(baseNum + z2) % TIEBAN_DB.career.length];
-      const c3 = TIEBAN_DB.family[(baseNum + z3) % TIEBAN_DB.family.length];
-      const c4 = TIEBAN_DB.luck[(baseNum + z4 + ke) % TIEBAN_DB.luck.length];
+      // 按皇极起数分别对齐六大类别 (0命格 1父母 2兄弟 3婚姻 4事业 5流年)
+      const seed = (z1 * 997 + z2 * 313 + z3 * 107 + z4 * 29 + ke * 131 + (genderCode ? 17 : 5)) % 1990;
+      const align = (base, catIdx) => 1001 + ((Math.floor(base / 6) * 6 + catIdx) % 12000);
+      const e1 = getTiebanEntry(align(seed * 6, 0));
+      const e2 = getTiebanEntry(align(seed * 6 + 1860, 1));
+      const e3 = getTiebanEntry(align(seed * 6 + 3720, 2));
+      const e4 = getTiebanEntry(align(seed * 6 + 5580, 3));
+      const e5 = getTiebanEntry(align(seed * 6 + 7440, 4));
+      const e6 = getTiebanEntry(align(seed * 6 + 9300 + (new Date().getFullYear() * 6), 5));
+      const c1 = e1.text, c2 = e5.text, c3 = e4.text, c4 = e6.text;
 
       document.getElementById("tbBaziInfo").innerHTML =
         "<h4>📜 权威节气八字与五行旺衰（离线详批）</h4>" +
@@ -571,11 +630,13 @@
           "<div class='mini-box'><b>⚖️ 离线五行调候建议（补" + weakestWx + "）：</b><br/>" + WX_REMEDY[weakestWx] + "</div>" +
         "</div>";
 
-      document.getElementById("tbClauses").innerHTML =
-        '<div class="tieban-clause"><span class="tag">命格总断 · 条文 ' + code1 + '</span><div style="margin-top:5px;">' + c1 + '</div></div>' +
-        '<div class="tieban-clause"><span class="tag">事业财禄 · 条文 ' + code2 + '</span><div style="margin-top:5px;">' + c2 + '</div></div>' +
-        '<div class="tieban-clause"><span class="tag">六亲姻缘 · 条文 ' + code3 + '</span><div style="margin-top:5px;">' + c3 + '</div></div>' +
-        '<div class="tieban-clause"><span class="tag">流年转机 · 条文 ' + code4 + '</span><div style="margin-top:5px;">' + c4 + '</div></div>';
+      const items = [
+        ["命格总断", e1], ["父母六亲", e2], ["兄弟手足", e3],
+        ["婚姻妻财", e4], ["事业功名", e5], ["今岁流年", e6]
+      ];
+      document.getElementById("tbClauses").innerHTML = items.map(([lbl, it]) =>
+        '<div class="tieban-clause"><span class="tag">' + lbl + ' · ' + it.ji + ' · 条文 ' + it.code + '</span><div style="margin-top:5px;">' + it.text + '</div></div>'
+      ).join("");
 
       document.getElementById("tbResult").style.display = "block";
       document.getElementById("tbAiOut").style.display = "none";
@@ -690,7 +751,8 @@
       if (savedKey) document.getElementById("aiApiKey").value = savedKey;
       refreshLicenseUI();
       renderAlmanac();
-      logMsg("易经玄数大师 v1.0.1 启动完成 (64卦全维详批 + 八卦类象 + 日主五行 + 48条铁板库)");
+      loadTieban12000();
+      logMsg("易经玄数大师 v1.0.2 启动完成 (64卦全维详批 + 八卦类象 + 日主五行 + 48条铁板库)");
     })();
   </script>
 </body>
