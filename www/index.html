@@ -282,6 +282,54 @@
     ];
 
     let yjThrows = [];
+
+    let TIEBAN_12000 = null;
+
+    async function loadTieban12000() {
+      const st = document.getElementById("tbDbStatus");
+      try {
+        const res = await fetch("data/tieban_12000.json");
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        TIEBAN_12000 = await res.json();
+        const total = TIEBAN_12000.meta?.total || Object.keys(TIEBAN_12000.clauses || {}).length;
+        if (st) st.innerHTML = "✅ 已加载本地离线铁板条文库：<b>" + total.toLocaleString() + " 条</b>（子集～亥集，编号 1001～13000）";
+        logMsg("铁板神数 12,000 条离线条文库加载成功 ✅");
+      } catch (e) {
+        if (st) st.innerHTML = "⚠️ 当前为内置精简库模式（安装 APK 后自动启用全量 12,000 条）";
+        logMsg("未能读取 data/tieban_12000.json，使用内置 48 条库: " + e.message);
+      }
+    }
+
+    function getTiebanEntry(codeNum) {
+      const n = ((Math.abs(Math.floor(codeNum)) - 1001) % 12000 + 12000) % 12000 + 1001;
+      const key = String(n);
+      if (TIEBAN_12000 && TIEBAN_12000.clauses && TIEBAN_12000.clauses[key]) {
+        const [jiIdx, catIdx, txt] = TIEBAN_12000.clauses[key];
+        const ji = (TIEBAN_12000.meta?.ji || [])[jiIdx] || "";
+        const cat = (TIEBAN_12000.meta?.cats || [])[catIdx] || "";
+        return { code: key.padStart(5, "0"), ji, cat, text: txt };
+      }
+      const jiList = ["子集","丑集","寅集","卯集","辰集","巳集","午集","未集","申集","酉集","戌集","亥集"];
+      const ji = jiList[Math.floor((n - 1001) / 1000)];
+      const fallback = TIEBAN_DB.mingge[n % TIEBAN_DB.mingge.length];
+      return { code: key.padStart(5, "0"), ji, cat: "条文", text: fallback };
+    }
+
+    function lookupTiebanCode() {
+      const v = parseInt(document.getElementById("tbSearchCode").value, 10);
+      if (isNaN(v) || v < 1001 || v > 13000) return alert("请输入 1001 到 13000 之间的条文编号！");
+      const item = getTiebanEntry(v);
+      const box = document.getElementById("tbLookupOut");
+      box.style.display = "block";
+      box.innerHTML = '<div class="tieban-clause"><span class="tag">' + item.ji + ' · 条文 ' + item.code + '（' + item.cat + '）</span><div style="margin-top:5px;">' + item.text + '</div></div>';
+    }
+
+    function randomTiebanCode() {
+      const rnd = Math.floor(Math.random() * 12000) + 1001;
+      document.getElementById("tbSearchCode").value = rnd;
+      lookupTiebanCode();
+    }
+
     let lastContext = { yijing: "", meihua: "", tieban: "" };
 
     function logMsg(msg) {
@@ -647,6 +695,7 @@
       if (savedKey) document.getElementById("aiApiKey").value = savedKey;
       refreshLicenseUI();
       renderAlmanac();
+      loadTieban12000();
       logMsg("易经玄数大师 v1.0.0 启动完成 (64卦典籍 + lunar-javascript)");
     })();
   </script>
