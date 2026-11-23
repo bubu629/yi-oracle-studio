@@ -2,8 +2,11 @@
   "name": "yi-oracle-studio",
   "version": "1.0.0",
   "private": true,
-  "description": "易经玄数大师 — 易经六十四卦 + 梅花易数 + 铁板神数",
+  "description": "易经玄数大师 — 集成 lunar-javascript + 周易64卦典籍 + 梅花易数 + 铁板神数",
+  "dependencies": {
+    "lunar-javascript": "^1.7.8"
+  },
   "scripts": {
-    "build": "echo 'Static web assets ready in www/'"
+    "prepare-vendor": "mkdir -p www/vendor && cp node_modules/lunar-javascript/lunar.js www/vendor/lunar.min.js"
   }
 }

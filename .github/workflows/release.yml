@@ -21,8 +21,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Setup Capacitor Android
+      - name: Install Public Libraries & Capacitor Android
         run: |
+          npm install
+          npm run prepare-vendor
           npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
           npx cap add android
           npx cap sync android
